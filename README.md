@@ -2,7 +2,7 @@
 
 This repo suggests a way to configure emacs using org-mode. Just use
 this repo as your `~/.emacs.d` to get started. All of your
-configuration should be written in [emacs.org](blob/master/emacs.org).
+configuration should be written in [emacs.org](emacs.org).
 
 ## Acknowledgement
 
