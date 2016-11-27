@@ -1,0 +1,81 @@
+#+TITLE: A litterate programming approach to customize emacs
+#+AUTHOR: Alex Patry
+#+EMAIL: alex@nlpfu.com
+
+* Introduction
+
+  This file is used to customize emacs to my needs. The pattern is to
+  add one section per type of configuration and then make sure that
+  all modules and configuration are defined in it.
+
+  The organization of this file is greatly inspired from Joost
+  Diepenmaat and the code he shared at
+  https://github.com/joodie/emacs-literal-config.
+
+  If you want to use this structure yourself, the easiest way to get
+  started is probably to clone this repository and move it at
+  =~/.emacs.d=. Make sure that no file is named =~/.emacs= as it would
+  be used instead of =~/.emacs.d/init.el= when emacs is starting.
+
+* Prologue
+
+  Before we start actually configuring our environment, let's define
+  some utilities that will help us get organized:
+
+  #+BEGIN_SRC emacs-lisp
+    ;; Initialize the package module
+    (package-initialize)
+     
+    ;; Add all the package repositories that we want to use.
+    (add-to-list 'package-archives
+                 '("melpa-stable" . "http://stable.melpa.org/packages/") t)
+
+    ;; Reloading the list of packages takes time, we will do it at most
+    ;; once. This variable will be true if the list has already be
+    ;; reloaded.
+    (setq my/package-refreshed nil)
+
+    ;; Install a package if it is not already installed.
+    (defun my/install (package)
+      ; install the package if it is not already installed
+      (unless (package-installed-p package)
+
+      ; make sure the package index is up-to-date
+      (unless my/package-refreshed
+        (package-refresh-contents)
+        (setq my/package-refreshed t))
+
+      (package-install package)))
+  #+END_SRC
+
+
+* Color theme
+   
+   I am a big fan of the dark version of the [[http://ethanschoonover.com/solarized][solarized theme]]:
+
+   #+name: look-and-feel
+   #+BEGIN_SRC emacs-lisp
+     (my/install 'solarized-theme)
+     (require 'solarized-theme)
+
+     (load-theme 'solarized-dark t)
+   #+END_SRC
+
+* Python
+
+  #+BEGIN_SRC emacs-lisp
+    (my/install 'python)
+    (my/install 'sphinx-doc)
+    (my/install 'sphinx-mode)
+  #+END_SRC
+
+* Epilogue
+
+** Custom values
+
+  Let's store custom values in a dedicated file:
+
+  #+BEGIN_SRC emacs-lisp
+    (setq custom-file "~/.emacs.d/custom.el")
+    (load custom-file)
+  #+END_SRC

@@ -1,0 +1,5 @@
+.org-id-locations
+*~
+elpa/
+emacs.el
+*#
