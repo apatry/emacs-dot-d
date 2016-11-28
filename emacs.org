@@ -4,70 +4,95 @@
 
 * Introduction
 
-  This file is used to customize emacs to my needs. The pattern is to
-  add one section per type of configuration and then make sure that
-  all modules and configuration are defined in it.
+This file is used to customize emacs to my needs. The pattern is to
+add one section per type of configuration and then make sure that
+all modules and configuration are defined in it.
 
-  The organization of this file is greatly inspired from Joost
-  Diepenmaat and the code he shared at
-  https://github.com/joodie/emacs-literal-config.
+The organization of this file is greatly inspired from Joost
+Diepenmaat and the code he shared at
+https://github.com/joodie/emacs-literal-config.
 
-  If you want to use this structure yourself, the easiest way to get
-  started is probably to clone this repository and move it at
-  =~/.emacs.d=. Make sure that no file is named =~/.emacs= as it would
-  be used instead of =~/.emacs.d/init.el= when emacs is starting.
+If you want to use this structure yourself, the easiest way to get
+started is probably to clone this repository and move it at
+=~/.emacs.d=. Make sure that no file is named =~/.emacs= as it would
+be used instead of =~/.emacs.d/init.el= when emacs is starting.
 
 * Prologue
 
-  Before we start actually configuring our environment, let's define
-  some utilities that will help us get organized:
+Before we start actually configuring our environment, let's define
+some utilities that will help us get organized:
 
-  #+BEGIN_SRC emacs-lisp
-    ;; Initialize the package module
-    (package-initialize)
-     
-    ;; Add all the package repositories that we want to use.
-    (add-to-list 'package-archives
-                 '("melpa-stable" . "http://stable.melpa.org/packages/") t)
+#+BEGIN_SRC emacs-lisp
+  ;; Initialize the package module
+  (package-initialize)
+   
+  ;; Add all the package repositories that we want to use.
+  (add-to-list 'package-archives
+               '("melpa-stable" . "http://stable.melpa.org/packages/") t)
 
-    ;; Reloading the list of packages takes time, we will do it at most
-    ;; once. This variable will be true if the list has already be
-    ;; reloaded.
-    (setq my/package-refreshed nil)
+  ;; Reloading the list of packages takes time, we will do it at most
+  ;; once. This variable will be true if the list has already be
+  ;; reloaded.
+  (setq my/package-refreshed nil)
 
-    ;; Install a package if it is not already installed.
-    (defun my/install (package)
-      ; install the package if it is not already installed
-      (unless (package-installed-p package)
+  ;; Install a package if it is not already installed.
+  (defun my/install (package)
+    ; install the package if it is not already installed
+    (unless (package-installed-p package)
 
-      ; make sure the package index is up-to-date
-      (unless my/package-refreshed
-        (package-refresh-contents)
-        (setq my/package-refreshed t))
+    ; make sure the package index is up-to-date
+    (unless my/package-refreshed
+      (package-refresh-contents)
+      (setq my/package-refreshed t))
 
-      (package-install package)))
-  #+END_SRC
+    (package-install package)))
+#+END_SRC
 
+
+* Startup configuration
+
+By default, emacs show a welcome screen. While it can be useful the
+first time we start emacs, it gets old very fast. Let's disable it:
+
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-screen t)
+#+END_SRC
+
+Also, emacs comes with a toolbar that is next to useless, let's
+reclaim back this space:
+
+#+BEGIN_SRC emacs-lisp
+  (tool-bar-mode -1)
+#+END_SRC
 
 * Color theme
-   
-   I am a big fan of the dark version of the [[http://ethanschoonover.com/solarized][solarized theme]]:
 
-   #+name: look-and-feel
-   #+BEGIN_SRC emacs-lisp
-     (my/install 'solarized-theme)
-     (require 'solarized-theme)
+I am a big fan of the dark version of the [[http://ethanschoonover.com/solarized][solarized theme]]:
 
-     (load-theme 'solarized-dark t)
-   #+END_SRC
+#+name: look-and-feel
+#+BEGIN_SRC emacs-lisp
+  (my/install 'solarized-theme)
+  (require 'solarized-theme)
+
+  (load-theme 'solarized-dark t)
+#+END_SRC
 
 * Python
 
-  #+BEGIN_SRC emacs-lisp
-    (my/install 'python)
-    (my/install 'sphinx-doc)
-    (my/install 'sphinx-mode)
-  #+END_SRC
+Let's start by installing modes for python and python documentation:
+
+#+BEGIN_SRC emacs-lisp
+  (my/install 'python)
+  (my/install 'sphinx-doc)
+  (my/install 'sphinx-mode)
+#+END_SRC
+
+This will help us use ipython as our shell instead of python:
+
+#+BEGIN_SRC emacs-lisp
+  (setq python-shell-interpreter "ipython"
+        python-shell-interpreter-args "-i")
+#+END_SRC
 
 * Epilogue
 
