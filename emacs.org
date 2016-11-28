@@ -77,6 +77,25 @@ I am a big fan of the dark version of the [[http://ethanschoonover.com/solarized
   (load-theme 'solarized-dark t)
 #+END_SRC
 
+* Git
+
+Let's use magit to deal with git command from within emacs:
+
+#+BEGIN_SRC emacs-lisp
+  (my/install 'magit)
+  (require 'magit)
+#+END_SRC
+
+We will also add git modification into the [[https://github.com/nonsequitur/git-gutter-plus][gutter]]:
+
+#+BEGIN_SRC emacs-lisp
+  (my/install 'git-gutter+)
+  (require 'git-gutter+)
+  
+  ; enable git-gutter everywhere by default
+  (global-git-gutter+-mode)
+#+END_SRC
+
 * Python
 
 Let's start by installing modes for python and python documentation:
