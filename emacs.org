@@ -62,7 +62,8 @@ Also, emacs comes with a toolbar that is next to useless, let's
 reclaim back this space:
 
 #+BEGIN_SRC emacs-lisp
-  (tool-bar-mode -1)
+  (if (display-graphic-p)
+    (tool-bar-mode -1))
 #+END_SRC
 
 * Color theme
