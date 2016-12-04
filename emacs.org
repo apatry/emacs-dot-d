@@ -48,7 +48,6 @@ some utilities that will help us get organized:
     (package-install package)))
 #+END_SRC
 
-
 * Startup configuration
 
 By default, emacs show a welcome screen. While it can be useful the
@@ -64,6 +63,25 @@ reclaim back this space:
 #+BEGIN_SRC emacs-lisp
   (if (display-graphic-p)
     (tool-bar-mode -1))
+#+END_SRC
+
+* Backups
+
+By default, emacs save backup files in the same directory as the files
+we are editing. Instead of adding files everywhere, let's use a
+dedicated directory for these backups:
+
+#+BEGIN_SRC emacs-lisp
+  (setq backup-directory-alist `(("." . "~/.emacs.d/backups/")))
+#+END_SRC
+
+Let's also have more backup per file as suggested [[http://stackoverflow.com/a/151946][here]]:
+
+#+BEGIN_SRC emacs-lisp
+  (setq delete-old-versions t
+    kept-new-versions 6
+    kept-old-versions 2
+    version-control t)
 #+END_SRC
 
 * Color theme
