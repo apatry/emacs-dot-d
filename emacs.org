@@ -115,6 +115,12 @@ We will also add git modification into the [[https://github.com/nonsequitur/git-
   (global-git-gutter+-mode)
 #+END_SRC
 
+* Graphviz
+
+#+BEGIN_SRC emacs-lisp
+  (my/install 'graphviz-dot-mode)
+#+END_SRC
+
 * Groovy
 
 Add support for groovy files:
@@ -142,6 +148,15 @@ This will help us use ipython as our shell instead of python:
   (when (executable-find "ipython")
     (setq python-shell-interpreter "ipython"
           python-shell-interpreter-args "--simple-prompt -i"))
+#+END_SRC
+
+* Javascript
+
+Javascript mode is shipped by default with emacs, we just want to set
+its configuration:
+
+#+BEGIN_SRC emacs-lisp
+ (setq js-indent-level 2)
 #+END_SRC
 
 * Epilogue
