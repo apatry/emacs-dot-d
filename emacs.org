@@ -159,6 +159,21 @@ its configuration:
  (setq js-indent-level 2)
 #+END_SRC
 
+* XML
+
+XML is still useful sometimes, let's set us up for these cases:
+
+#+BEGIN_SRC emacs-lisp
+  (my/install 'auto-complete-nxml)
+  (my/install 'rnc-mode)
+
+  ;; Keystroke to popup help about something at point.
+  (setq auto-complete-nxml-popup-help-key "C-:")
+
+  ;; Keystroke to toggle on/off automatic completion.
+  (setq auto-complete-nxml-toggle-automatic-key "C-c C-t")
+#+END_SRC
+
 * Epilogue
 
 ** Custom values
