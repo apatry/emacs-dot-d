@@ -151,6 +151,24 @@ Use [[https://github.com/motus/pig-mode][pig-mode]] with indent of 2:
   (setq pig-indent-level 2)
 #+END_SRC
 
+* Javascript
+
+Javascript mode is shipped by default with emacs, we just want to set
+its configuration:
+
+#+BEGIN_SRC emacs-lisp
+ (setq js-indent-level 2)
+#+END_SRC
+
+* Org-mode
+
+Let's set the workflow for tasks:
+
+#+BEGIN_SRC emacs-lisp
+ (setq org-todo-keywords
+       '((sequence "TODO" "IN-PROGRESS" "BLOCKED" "|" "DONE" "DELEGATED")))
+#+END_SRC
+
 * Python
 
 Let's start by installing modes for python and python documentation:
