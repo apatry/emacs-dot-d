@@ -25,10 +25,10 @@ some utilities that will help us get organized:
 #+BEGIN_SRC emacs-lisp
   ;; Initialize the package module
   (package-initialize)
-   
+
   ;; Add all the package repositories that we want to use.
   (add-to-list 'package-archives
-               '("melpa-stable" . "http://stable.melpa.org/packages/") t)
+               '("melpa" . "http://melpa.org/packages/") t)
 
   ;; Reloading the list of packages takes time, we will do it at most
   ;; once. This variable will be true if the list has already be
@@ -100,17 +100,17 @@ I am a big fan of the dark version of the [[http://ethanschoonover.com/solarized
 
 Let's use magit to deal with git command from within emacs:
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp-noop
   (my/install 'magit)
   (require 'magit)
 #+END_SRC
 
 We will also add git modification into the [[https://github.com/nonsequitur/git-gutter-plus][gutter]]:
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp-noop
   (my/install 'git-gutter+)
   (require 'git-gutter+)
-  
+
   ; enable git-gutter everywhere by default
   (global-git-gutter+-mode)
 #+END_SRC
@@ -132,6 +132,25 @@ Add support for groovy files:
   (require 'groovy-mode)
 #+END_SRC
 
+* Org-mode
+
+Trigger the agenda:
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key "\C-cl" 'org-store-link)
+  (global-set-key "\C-ca" 'org-agenda)
+#+END_SRC
+
+* Pig
+
+Use [[https://github.com/motus/pig-mode][pig-mode]] with indent of 2:
+
+#+BEGIN_SRC emacs-lisp
+  (my/install 'pig-mode)
+
+  (setq pig-indent-level 2)
+#+END_SRC
+
 * Python
 
 Let's start by installing modes for python and python documentation:
@@ -147,7 +166,7 @@ This will help us use ipython as our shell instead of python:
 #+BEGIN_SRC emacs-lisp
   (when (executable-find "ipython")
     (setq python-shell-interpreter "ipython"
-          python-shell-interpreter-args "--simple-prompt -i"))
+          python-shell-interpreter-args "-i"))
 #+END_SRC
 
 * Javascript
@@ -172,6 +191,14 @@ XML is still useful sometimes, let's set us up for these cases:
 
   ;; Keystroke to toggle on/off automatic completion.
   (setq auto-complete-nxml-toggle-automatic-key "C-c C-t")
+#+END_SRC
+
+* Whitespaces
+
+Nobody likes trailing whitespaces, let's just remove them:
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
 #+END_SRC
 
 * Epilogue
