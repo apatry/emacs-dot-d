@@ -169,12 +169,26 @@ Let's set the workflow for tasks:
        '((sequence "TODO" "IN-PROGRESS" "BLOCKED" "|" "DONE" "DELEGATED")))
 #+END_SRC
 
+* Protobuf-mode
+
+#+BEGIN_SRC emacs-lisp
+  (my/install 'protobuf-mode)
+#+END_SRC
+
+* Protobuf-mode
+
+#+BEGIN_SRC emacs-lisp
+  (my/install 'thrift)
+#+END_SRC
+
 * Python
 
 Let's start by installing modes for python and python documentation:
 
 #+BEGIN_SRC emacs-lisp
   (my/install 'python)
+  (my/install 'python-docstring)
+  (python-docstring-install)
   (my/install 'sphinx-doc)
   (my/install 'sphinx-mode)
 #+END_SRC
@@ -185,6 +199,14 @@ This will help us use ipython as our shell instead of python:
   (when (executable-find "ipython")
     (setq python-shell-interpreter "ipython"
           python-shell-interpreter-args "-i"))
+#+END_SRC
+
+* Scala
+
+Add support for scala:
+
+#+BEGIN_SRC emacs-lisp
+  (my/install 'scala-mode)
 #+END_SRC
 
 * Javascript
