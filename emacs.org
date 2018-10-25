@@ -132,6 +132,14 @@ Add support for groovy files:
   (require 'groovy-mode)
 #+END_SRC
 
+* Markdown
+
+Add support for markdown
+
+#+BEGIN_SRC emacs-lisp
+  (my/install 'markdown-mode)
+#+END_SRC
+
 * Org-mode
 
 Trigger the agenda:
