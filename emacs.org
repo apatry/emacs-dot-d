@@ -65,6 +65,17 @@ reclaim back this space:
     (tool-bar-mode -1))
 #+END_SRC
 
+* Flycheck Global
+
+We want to enable flycheck by default:
+
+#+BEGIN_SRC emacs-lisp
+  (my/install 'flycheck)
+  (global-flycheck-mode)
+#+END_SRC
+
+More info at https://www.flycheck.org/en/latest/
+
 * Backups
 
 By default, emacs save backup files in the same directory as the files
@@ -197,6 +208,9 @@ Let's start by installing modes for python and python documentation:
   (my/install 'python)
   (my/install 'python-docstring)
   (python-docstring-install)
+
+  (my/install 'flycheck-pyflakes)
+
   (my/install 'sphinx-doc)
   (my/install 'sphinx-mode)
 #+END_SRC
