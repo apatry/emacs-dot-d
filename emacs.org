@@ -105,7 +105,7 @@ I will give [[https://github.com/hlissner/emacs-doom-themes#features][doom-theme
   (my/install 'doom-themes)
   (require 'doom-themes)
 
-  (load-theme 'doom-dracula t)
+  (load-theme 'doom-gruvbox t)
 
   ;; additional org support, yay!
   (doom-themes-org-config)
@@ -120,14 +120,14 @@ Let's use magit to deal with git command from within emacs:
   (require 'magit)
 #+END_SRC
 
-We will also add git modification into the [[https://github.com/nonsequitur/git-gutter-plus][gutter]]:
+We will also add git modification into the [[https://github.com/syohex/emacs-git-gutter][gutter]]:
 
-#+BEGIN_SRC emacs-lisp-noop
-  (my/install 'git-gutter+)
-  (require 'git-gutter+)
+#+BEGIN_SRC emacs-lisp
+  (my/install 'git-gutter)
+  (require 'git-gutter)
 
   ; enable git-gutter everywhere by default
-  (global-git-gutter+-mode)
+  (global-git-gutter-mode +1)
 #+END_SRC
 
 * Graphviz
