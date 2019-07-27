@@ -23,12 +23,15 @@ Before we start actually configuring our environment, let's define
 some utilities that will help us get organized:
 
 #+BEGIN_SRC emacs-lisp
-  ;; Initialize the package module
-  (package-initialize)
+  (require 'package)
 
   ;; Add all the package repositories that we want to use.
   (add-to-list 'package-archives
                '("melpa" . "http://melpa.org/packages/") t)
+
+  ;; Initialize the package module, this must be after 'package-archives
+  ;; has been set
+  (package-initialize)
 
   ;; Reloading the list of packages takes time, we will do it at most
   ;; once. This variable will be true if the list has already be
@@ -37,16 +40,15 @@ some utilities that will help us get organized:
 
   ;; Install a package if it is not already installed.
   (defun my/install (package)
-    ; install the package if it is not already installed
     (unless (package-installed-p package)
-
-    ; make sure the package index is up-to-date
-    (unless my/package-refreshed
-      (package-refresh-contents)
-      (setq my/package-refreshed t))
-
-    (package-install package)))
+      (unless my/package-refreshed
+        (package-refresh-contents)
+        (setq my/package-refreshed t))
+      (package-install package)))
 #+END_SRC
+
+#+RESULTS:
+: my/install
 
 * Startup configuration
 
@@ -97,21 +99,23 @@ Let's also have more backup per file as suggested [[http://stackoverflow.com/a/1
 
 * Color theme
 
-I am a big fan of the dark version of the [[http://ethanschoonover.com/solarized][solarized theme]]:
+I will give [[https://github.com/hlissner/emacs-doom-themes#features][doom-themes]] a try:
 
-#+name: look-and-feel
 #+BEGIN_SRC emacs-lisp
-  (my/install 'solarized-theme)
-  (require 'solarized-theme)
+  (my/install 'doom-themes)
+  (require 'doom-themes)
 
-  (load-theme 'solarized-dark t)
+  (load-theme 'doom-dracula t)
+
+  ;; additional org support, yay!
+  (doom-themes-org-config)
 #+END_SRC
 
 * Git
 
 Let's use magit to deal with git command from within emacs:
 
-#+BEGIN_SRC emacs-lisp-noop
+#+BEGIN_SRC emacs-lisp
   (my/install 'magit)
   (require 'magit)
 #+END_SRC
@@ -151,15 +155,6 @@ Add support for markdown
   (my/install 'markdown-mode)
 #+END_SRC
 
-* Org-mode
-
-Trigger the agenda:
-
-#+BEGIN_SRC emacs-lisp
-  (global-set-key "\C-cl" 'org-store-link)
-  (global-set-key "\C-ca" 'org-agenda)
-#+END_SRC
-
 * Pig
 
 Use [[https://github.com/motus/pig-mode][pig-mode]] with indent of 2:
@@ -179,22 +174,78 @@ its configuration:
  (setq js-indent-level 2)
 #+END_SRC
 
+* Modeline
+
+Let's use [[https://github.com/seagle0128/doom-modeline][doom-modeline]]:
+
+#+BEGIN_SRC emacs-lisp
+  ;; run the following only once to install the fonts required by
+  ;; doom-modeline. I didn't find an easy way to run this only once ...
+  ; (my/install 'all-the-icons)
+  ; (require 'all-the-icons)
+  ; (all-the-icons-install-fonts)
+
+  (my/install 'doom-modeline)
+  (require 'doom-modeline)
+
+  (doom-modeline-mode 1)
+#+END_SRC
+
 * Org-mode
+** Key bindings
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key "\C-cl" 'org-store-link)
+  (global-set-key "\C-ca" 'org-agenda)
+#+END_SRC
+
+** Workflow
 
 Let's set the workflow for tasks:
 
 #+BEGIN_SRC emacs-lisp
  (setq org-todo-keywords
        '((sequence "TODO" "IN-PROGRESS" "BLOCKED" "|" "DONE" "DELEGATED")))
+
+ ;; Capture timestamp when tasks are done
+ (setq org-log-done t)
 #+END_SRC
 
-* Protobuf-mode
+** Appearance
+
+First, let's start by configuring the appearance of top level items:
+
+#+BEGIN_SRC emacs-lisp
+  ;; let's replace the stars with actual bullets
+  (my/install 'org-bullets)
+  (require 'org-bullets)
+
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+
+  ;; Only show the last star in the tree
+  (setq org-hide-leading-stars t)
+
+  ;; Align tags in the headline
+  (setq org-tags-column t)
+
+  ;; Prettify code blocks
+  (setq org-src-fontify-natively t)
+#+END_SRC
+
+** Miscellaneous
+
+#+BEGIN_SRC emacs-lisp
+ ;; Make sure we don't kill the whole subtree when killing folded hearders
+ (setq org-ctrl-k-protect-subtree t)
+#+END_SRC
+
+* Protobuf
 
 #+BEGIN_SRC emacs-lisp
   (my/install 'protobuf-mode)
 #+END_SRC
 
-* Protobuf-mode
+* Thrift
 
 #+BEGIN_SRC emacs-lisp
   (my/install 'thrift)
@@ -231,13 +282,10 @@ Add support for scala:
   (my/install 'scala-mode)
 #+END_SRC
 
-* Javascript
+* TeX
 
-Javascript mode is shipped by default with emacs, we just want to set
-its configuration:
-
-#+BEGIN_SRC emacs-lisp
- (setq js-indent-level 2)
+#+BEGIN+_SRC emacs-list
+  (my/install 'auctex)
 #+END_SRC
 
 * XML
@@ -266,10 +314,9 @@ Nobody likes trailing whitespaces, let's just remove them:
 * Epilogue
 
 ** Custom values
+Let's store custom values in a dedicated file:
 
-  Let's store custom values in a dedicated file:
-
-  #+BEGIN_SRC emacs-lisp
-    (setq custom-file "~/.emacs.d/custom.el")
-    (load custom-file)
-  #+END_SRC
+#+BEGIN_SRC emacs-lisp
+ (setq custom-file "~/.emacs.d/custom.el")
+ (load custom-file)
+#+END_SRC
