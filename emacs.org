@@ -147,6 +147,26 @@ Add support for groovy files:
   (require 'groovy-mode)
 #+END_SRC
 
+* Helm
+
+[[https://github.com/emacs-helm/helm/wiki#install][Helm]] is an auto-completion package for emacs. I am not familiar with
+it yet, so this config might be suboptimal:
+
+#+BEGIN_SRC emacs-lisp
+(my/install 'helm)
+(require 'helm-config)
+
+;; this might be disruptive, let's see how it goes
+(global-set-key (kbd "M-x") #'helm-M-x)
+(global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
+(global-set-key (kbd "C-x C-f") #'helm-find-files)
+
+(helm-mode 1)
+#+END_SRC
+
+#+RESULTS:
+: t
+
 * Markdown
 
 Add support for markdown
