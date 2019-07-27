@@ -164,9 +164,6 @@ it yet, so this config might be suboptimal:
 (helm-mode 1)
 #+END_SRC
 
-#+RESULTS:
-: t
-
 * Markdown
 
 Add support for markdown
