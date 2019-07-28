@@ -242,6 +242,16 @@ Let's set the workflow for tasks:
  (setq org-log-done t)
 #+END_SRC
 
+** org-babel
+
+Let's activate the language we care about:
+
+#+BEGIN_SRC emacs-lisp :results silent
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((python . t)))
+#+END_SRC
+
 ** Appearance
 
 First, let's start by configuring the appearance of top level items:
