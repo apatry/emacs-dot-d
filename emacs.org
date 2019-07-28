@@ -172,6 +172,20 @@ Add support for markdown
   (my/install 'markdown-mode)
 #+END_SRC
 
+* Nix
+
+Let's add support for nix, a package manager.
+
+#+BEGIN_SRC emacs-lisp :results silent
+  (my/install 'nix-mode)
+  (require 'nix-mode)
+
+  ;; enable nix mode for .nix files
+  (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
+#+END_SRC
+
+#+RESULTS:
+
 * Pig
 
 Use [[https://github.com/motus/pig-mode][pig-mode]] with indent of 2:

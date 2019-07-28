@@ -11,7 +11,7 @@
     ("~/Documents/org/daily.org" "~/Documents/newworld.org")))
  '(package-selected-packages
    (quote
-    (helm helm-config auctex sphinx-mode sphinx-doc pig-mode solarized-theme magit groovy-mode graphviz-dot-mode gradle-mode git-gutter+))))
+    (nix-mode helm helm-config auctex sphinx-mode sphinx-doc pig-mode solarized-theme magit groovy-mode graphviz-dot-mode gradle-mode git-gutter+))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
