@@ -298,13 +298,14 @@ Let's start by installing modes for python and python documentation:
 
 #+BEGIN_SRC emacs-lisp
   (my/install 'python)
+  (my/install 'flycheck-pyflakes)
+#+END_SRC
+
+This will help generating our docstring:
+
+#+BEGIN_SRC emacs-lisp
   (my/install 'python-docstring)
   (python-docstring-install)
-
-  (my/install 'flycheck-pyflakes)
-
-  (my/install 'sphinx-doc)
-  (my/install 'sphinx-mode)
 #+END_SRC
 
 This will help us use ipython as our shell instead of python:
