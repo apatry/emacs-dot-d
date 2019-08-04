@@ -301,6 +301,15 @@ Let's start by installing modes for python and python documentation:
   (my/install 'flycheck-pyflakes)
 #+END_SRC
 
+We will use the current file indentation format and default to 2
+spaces for new files:
+
+#+BEGIN_SRC elisp :results silent
+  (custom-set-variables
+   '(python-indent-guess-indent-offset nil)
+   '(python-indent-offset 2))
+#+END_SRC
+
 This will help generating our docstring:
 
 #+BEGIN_SRC emacs-lisp
