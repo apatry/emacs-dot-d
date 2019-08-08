@@ -25,9 +25,20 @@ some utilities that will help us get organized:
 #+BEGIN_SRC emacs-lisp
   (require 'package)
 
-  ;; Add all the package repositories that we want to use.
-  (add-to-list 'package-archives
-               '("melpa" . "http://melpa.org/packages/") t)
+  (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
+		      (not (gnutls-available-p))))
+	 (proto (if no-ssl "http" "https")))
+    (when no-ssl
+      (warn "\
+  Your version of Emacs does not support SSL connections,
+  which is unsafe because it allows man-in-the-middle attacks.
+  There are two things you can do about this warning:
+  1. Install an Emacs version that does support SSL and be safe.
+  2. Remove this warning from your init file so you won't see it again."))
+
+    ;; Add all the package repositories that we want to use.
+    (add-to-list 'package-archives
+		 (cons "melpa" (concat proto "://melpa.org/packages/")) t))
 
   ;; Initialize the package module, this must be after 'package-archives
   ;; has been set
@@ -42,8 +53,8 @@ some utilities that will help us get organized:
   (defun my/install (package)
     (unless (package-installed-p package)
       (unless my/package-refreshed
-        (package-refresh-contents)
-        (setq my/package-refreshed t))
+	(package-refresh-contents)
+	(setq my/package-refreshed t))
       (package-install package)))
 #+END_SRC
 
@@ -222,64 +233,6 @@ Let's use [[https://github.com/seagle0128/doom-modeline][doom-modeline]]:
   (doom-modeline-mode 1)
 #+END_SRC
 
-* Org-mode
-** Key bindings
-
-#+BEGIN_SRC emacs-lisp
-  (global-set-key "\C-cl" 'org-store-link)
-  (global-set-key "\C-ca" 'org-agenda)
-#+END_SRC
-
-** Workflow
-
-Let's set the workflow for tasks:
-
-#+BEGIN_SRC emacs-lisp
- (setq org-todo-keywords
-       '((sequence "TODO" "IN-PROGRESS" "BLOCKED" "|" "DONE" "DELEGATED")))
-
- ;; Capture timestamp when tasks are done
- (setq org-log-done t)
-#+END_SRC
-
-** org-babel
-
-Let's activate the language we care about:
-
-#+BEGIN_SRC emacs-lisp :results silent
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((python . t)))
-#+END_SRC
-
-** Appearance
-
-First, let's start by configuring the appearance of top level items:
-
-#+BEGIN_SRC emacs-lisp
-  ;; let's replace the stars with actual bullets
-  (my/install 'org-bullets)
-  (require 'org-bullets)
-
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-
-  ;; Only show the last star in the tree
-  (setq org-hide-leading-stars t)
-
-  ;; Align tags in the headline
-  (setq org-tags-column t)
-
-  ;; Prettify code blocks
-  (setq org-src-fontify-natively t)
-#+END_SRC
-
-** Miscellaneous
-
-#+BEGIN_SRC emacs-lisp
- ;; Make sure we don't kill the whole subtree when killing folded hearders
- (setq org-ctrl-k-protect-subtree t)
-#+END_SRC
-
 * Protobuf
 
 #+BEGIN_SRC emacs-lisp
@@ -333,6 +286,15 @@ Add support for scala:
   (my/install 'scala-mode)
 #+END_SRC
 
+* Sparql
+
+Add support for sparql:
+
+#+BEGIN_SRC elisp
+  (my/install 'sparql-mode)
+  (require 'sparql-mode)
+#+END_SRC
+
 * TeX
 
 #+BEGIN+_SRC emacs-list
@@ -360,6 +322,74 @@ Nobody likes trailing whitespaces, let's just remove them:
 
 #+BEGIN_SRC emacs-lisp
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
+#+END_SRC
+
+* Org-mode
+** Key bindings
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key "\C-cl" 'org-store-link)
+  (global-set-key "\C-ca" 'org-agenda)
+#+END_SRC
+
+** Workflow
+
+Let's set the workflow for tasks:
+
+#+BEGIN_SRC emacs-lisp
+ (setq org-todo-keywords
+       '((sequence "TODO" "IN-PROGRESS" "BLOCKED" "|" "DONE" "DELEGATED")))
+
+ ;; Capture timestamp when tasks are done
+ (setq org-log-done t)
+#+END_SRC
+
+** org-babel
+
+Let's activate the language we care about:
+
+#+BEGIN_SRC emacs-lisp :results silent
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((emacs-lisp t)
+       (python . t)
+       (sparql . t)))
+#+END_SRC
+
+** ox-hugo
+
+[[https://ox-hugo.scripter.co/][ox-hugo]] is an org-mode exporter allowing to blog with the [[https://gohugo.io][Hugo]]
+platform in org-mode.
+
+#+BEGIN_SRC elisp :results silent
+  (my/install 'ox-hugo)
+  (with-eval-after-load 'ox
+    (require 'ox-hugo))
+#+END_SRC
+
+** Appearance
+
+First, let's start by configuring the appearance of top level items:
+
+#+BEGIN_SRC emacs-lisp
+  ;; let's replace the stars with actual bullets
+  (my/install 'org-bullets)
+  (require 'org-bullets)
+
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+
+  ;; Align tags in the headline
+  (setq org-tags-column t)
+
+  ;; Prettify code blocks
+  (setq org-src-fontify-natively t)
+#+END_SRC
+
+** Miscellaneous
+
+#+BEGIN_SRC emacs-lisp
+ ;; Make sure we don't kill the whole subtree when killing folded hearders
+ (setq org-ctrl-k-protect-subtree t)
 #+END_SRC
 
 * Epilogue
