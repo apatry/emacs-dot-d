@@ -290,7 +290,7 @@ Add support for scala:
 
 Add support for sparql:
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC emacs-lisp :results silent output
   (my/install 'sparql-mode)
   (require 'sparql-mode)
 #+END_SRC
@@ -353,6 +353,7 @@ Let's activate the language we care about:
      'org-babel-load-languages
      '((emacs-lisp t)
        (python . t)
+       (shell . t)
        (sparql . t)))
 #+END_SRC
 
