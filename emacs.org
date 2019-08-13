@@ -78,6 +78,16 @@ reclaim back this space:
     (tool-bar-mode -1))
 #+END_SRC
 
+* Custom commands
+
+#+BEGIN_SRC emacs-lisp :results silent output
+  (defun dot-emacs ()
+    "Shortcut to open this file. I often tweak my emacs config,
+  this short cut makes it easier to get here."
+    (interactive)
+    (find-file "~/.emacs.d/emacs.org"))
+#+END_SRC
+
 * Flycheck Global
 
 We want to enable flycheck by default:
