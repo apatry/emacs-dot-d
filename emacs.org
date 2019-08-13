@@ -362,7 +362,7 @@ Let's activate the language we care about:
 [[https://ox-hugo.scripter.co/][ox-hugo]] is an org-mode exporter allowing to blog with the [[https://gohugo.io][Hugo]]
 platform in org-mode.
 
-#+BEGIN_SRC elisp :results silent
+#+BEGIN_SRC emacs-lisp :results silent
   (my/install 'ox-hugo)
   (with-eval-after-load 'ox
     (require 'ox-hugo))
