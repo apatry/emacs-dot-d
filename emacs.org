@@ -217,6 +217,20 @@ Use [[https://github.com/motus/pig-mode][pig-mode]] with indent of 2:
   (setq pig-indent-level 2)
 #+END_SRC
 
+* Projectile
+
+Use [[https://github.com/bbatsov/projectile][projectile]] to search for files:
+
+#+BEGIN_SRC emacs-lisp
+  (my/install 'projectile)
+  (my/install 'helm-projectile)
+  (projectile-mode +1)
+  (helm-projectile)
+
+  (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+#+END_SRC
+
 * Javascript
 
 Javascript mode is shipped by default with emacs, we just want to set
