@@ -225,8 +225,8 @@ Use [[https://github.com/bbatsov/projectile][projectile]] to search for files:
   (my/install 'projectile)
   (my/install 'helm-projectile)
 
-  (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
-  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+  ; (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
+  ; (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 
   (helm-projectile)
   (setq projectile-project-root-files "~/workspace")
@@ -410,6 +410,9 @@ First, let's start by configuring the appearance of top level items:
   ;; Prettify code blocks
   (setq org-src-fontify-natively t)
 #+END_SRC
+
+Make sure to run =M-x all-the-icons-install-fonts= at least once on
+your system if the icons do not render well.
 
 ** Miscellaneous
 
