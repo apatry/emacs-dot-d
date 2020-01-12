@@ -173,6 +173,16 @@ I will give [[https://github.com/hlissner/emacs-doom-themes#features][doom-theme
     :ensure t)
 #+END_SRC
 
+* Company
+
+Setup auto-complete powered by company-mode:
+
+#+BEGIN_SRC emacs-lisp
+  (use-package company
+    :hook (after-init . global-company-mode)
+    :ensure t)
+#+END_SRC
+
 * Git
 
 Let's use magit to deal with git command from within emacs:
@@ -221,6 +231,44 @@ it yet, so this config might be suboptimal:
          ("C-x C-f" . helm-find-files))
   :config (helm-mode 1)
   :ensure t)
+#+END_SRC
+
+* Lsp
+
+** Installing Requirements
+
+#+BEGIN_SRC sh
+pip3 install python-language-server
+sudo npm i -g bash-language-server
+#+END_SRC
+
+** Installing the client
+
+#+BEGIN_SRC emacs-lisp
+  (use-package lsp-mode
+    :hook (prog-mode . lsp)
+    :ensure t)
+
+  (use-package lsp-ui
+    :hook (lsp-mode lsp-ui-mode)
+    :ensure t)
+
+  (use-package company-lsp
+    :after (company-mode lsp-mode)
+    :config (push 'company-lsp company-backends)
+    :ensure t)
+
+  (use-package lsp-treemacs
+    :after lsp-mode
+    :config
+      (lsp-metals-treeview-enable t)
+      (setq lsp-metals-treeview-show-when-views-received t)
+    :ensure t)
+
+  (use-package lsp-java
+    :after lsp
+    :hook (java-mode . lsp)
+    :ensure t)
 #+END_SRC
 
 * Markdown
