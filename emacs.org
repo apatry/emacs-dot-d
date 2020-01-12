@@ -100,7 +100,19 @@ emacs -l .emacs.d/init.el -batch --eval '(message "Hello, world!")'  1.09s user 
 
 #+BEGIN_SRC emacs-lisp
 (my/install 'use-package)
+
+;; make sure packages are updated when new versions are available
+(use-package auto-package-update
+  :config
+  (setq auto-package-update-delete-old-versions t)
+  (setq auto-package-update-hide-results t)
+  (auto-package-update-maybe)
+
+  :ensure t)
 #+END_SRC
+
+#+RESULTS:
+: t
 
 * Startup configuration
 
@@ -459,7 +471,7 @@ Nobody likes trailing whitespaces, let's just remove them:
       (setq org-ctrl-k-protect-subtree t)
 
       ;; Align tags in the headline
-      (setq org-tags-column t)
+      (setq org-tags-column -80)
 
       ;; Prettify code blocks
       (setq org-src-fontify-natively t)
