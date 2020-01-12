@@ -61,6 +61,47 @@ some utilities that will help us get organized:
 #+RESULTS:
 : my/install
 
+* Use Package
+
+At first, I was using =my/install= for all my packages. I decided to
+test drive =use-package= and see how it could make things
+better. Before migrating to it, my startup time was:
+
+#+BEGIN_VERBATIM
+time emacs -l .emacs.d/init.el  -batch --eval '(message "Hello, world!")'
+Loading /etc/emacs/site-start.d/00debian.el (source)...
+Loading /etc/emacs/site-start.d/50dictionaries-common.el (source)...
+Loading debian-ispell...
+Loading /var/cache/dictionaries-common/emacsen-ispell-default.el (source)...
+Loading /var/cache/dictionaries-common/emacsen-ispell-dicts.el (source)...
+Tangled 35 code blocks from emacs.org
+Loading /home/alex/.emacs.d/emacs.el (source)...
+Loading /home/alex/.emacs.d/custom.el (source)...
+Loaded /home/alex/.emacs.d/emacs.el
+Hello, world!
+emacs -l .emacs.d/init.el -batch --eval '(message "Hello, world!")'  1.12s user 0.06s system 99% cpu 1.188 total
+#+END_VERBATIM
+
+After the migration, it was:
+
+#+BEGIN_VERBATIM
+time emacs -l .emacs.d/init.el  -batch --eval '(message "Hello, world!")'
+Loading /etc/emacs/site-start.d/00debian.el (source)...
+Loading /etc/emacs/site-start.d/50dictionaries-common.el (source)...
+Loading debian-ispell...
+Loading /var/cache/dictionaries-common/emacsen-ispell-default.el (source)...
+Loading /var/cache/dictionaries-common/emacsen-ispell-dicts.el (source)...
+Loading /home/alex/.emacs.d/emacs.el (source)...
+Loading /home/alex/.emacs.d/custom.el (source)...
+Loaded ~/.emacs.d/emacs.el
+Hello, world!
+emacs -l .emacs.d/init.el -batch --eval '(message "Hello, world!")'  1.09s user 0.03s system 99% cpu 1.124 total
+#+END_VERBATIM
+
+#+BEGIN_SRC emacs-lisp
+(my/install 'use-package)
+#+END_SRC
+
 * Startup configuration
 
 By default, emacs show a welcome screen. While it can be useful the
@@ -88,13 +129,15 @@ reclaim back this space:
     (find-file "~/.emacs.d/emacs.org"))
 #+END_SRC
 
-* Flycheck Global
+* Flycheck
 
-We want to enable flycheck by default:
+Flycheck checks the syntax in many programming language and add visual
+markers when it detects an error. We want to enable it by default:
 
 #+BEGIN_SRC emacs-lisp
-  (my/install 'flycheck)
-  (global-flycheck-mode)
+  (use-package flycheck
+    :config (global-flycheck-mode)
+    :ensure t)
 #+END_SRC
 
 More info at https://www.flycheck.org/en/latest/
@@ -123,13 +166,11 @@ Let's also have more backup per file as suggested [[http://stackoverflow.com/a/1
 I will give [[https://github.com/hlissner/emacs-doom-themes#features][doom-themes]] a try:
 
 #+BEGIN_SRC emacs-lisp
-  (my/install 'doom-themes)
-  (require 'doom-themes)
-
-  (load-theme 'doom-gruvbox t)
-
-  ;; additional org support, yay!
-  (doom-themes-org-config)
+  (use-package doom-themes
+    :config
+    (load-theme 'doom-gruvbox t)
+    (doom-themes-org-config)
+    :ensure t)
 #+END_SRC
 
 * Git
@@ -137,24 +178,24 @@ I will give [[https://github.com/hlissner/emacs-doom-themes#features][doom-theme
 Let's use magit to deal with git command from within emacs:
 
 #+BEGIN_SRC emacs-lisp
-  (my/install 'magit)
-  (require 'magit)
+  (use-package magit
+   :ensure t)
 #+END_SRC
 
 We will also add git modification into the [[https://github.com/syohex/emacs-git-gutter][gutter]]:
 
 #+BEGIN_SRC emacs-lisp
-  (my/install 'git-gutter)
-  (require 'git-gutter)
-
-  ; enable git-gutter everywhere by default
-  (global-git-gutter-mode +1)
+  (use-package git-gutter
+    :config (global-git-gutter-mode +1)
+    :ensure t)
 #+END_SRC
 
 * Graphviz
 
 #+BEGIN_SRC emacs-lisp
-  (my/install 'graphviz-dot-mode)
+  (use-package graphviz-dot-mode
+    :mode "\\.dot\\'"
+    :ensure t)
 #+END_SRC
 
 * Groovy
@@ -162,10 +203,9 @@ We will also add git modification into the [[https://github.com/syohex/emacs-git
 Add support for groovy files:
 
 #+BEGIN_SRC emacs-lisp
-  (my/install 'groovy-mode)
-
-  (require 'cl)
-  (require 'groovy-mode)
+  (use-package groovy-mode
+    :mode "\\.groovy\\'\\|\\.gradle\\'"
+    :ensure t)
 #+END_SRC
 
 * Helm
@@ -174,15 +214,13 @@ Add support for groovy files:
 it yet, so this config might be suboptimal:
 
 #+BEGIN_SRC emacs-lisp
-(my/install 'helm)
-(require 'helm-config)
 
-;; this might be disruptive, let's see how it goes
-(global-set-key (kbd "M-x") #'helm-M-x)
-(global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
-(global-set-key (kbd "C-x C-f") #'helm-find-files)
-
-(helm-mode 1)
+(use-package helm
+  :bind (("M-x" . helm-M-x)
+         ("C-x r b" . helm-filtered-bookmarks)
+         ("C-x C-f" . helm-find-files))
+  :config (helm-mode 1)
+  :ensure t)
 #+END_SRC
 
 * Markdown
@@ -190,7 +228,9 @@ it yet, so this config might be suboptimal:
 Add support for markdown
 
 #+BEGIN_SRC emacs-lisp
-  (my/install 'markdown-mode)
+  (use-package markdown-mode
+    :mode "\\.md\\'"
+    :ensure t)
 #+END_SRC
 
 * Nix
@@ -198,11 +238,9 @@ Add support for markdown
 Let's add support for nix, a package manager.
 
 #+BEGIN_SRC emacs-lisp :results silent
-  (my/install 'nix-mode)
-  (require 'nix-mode)
-
-  ;; enable nix mode for .nix files
-  (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
+  (use-package nix-mode
+    :mode "\\.nix\\'"
+    :ensure t)
 #+END_SRC
 
 #+RESULTS:
@@ -212,9 +250,10 @@ Let's add support for nix, a package manager.
 Use [[https://github.com/motus/pig-mode][pig-mode]] with indent of 2:
 
 #+BEGIN_SRC emacs-lisp
-  (my/install 'pig-mode)
-
-  (setq pig-indent-level 2)
+  (use-package pig-mode
+    :init (setq pig-indent-level 2)
+    :mode "\\.pig\\'"
+    :ensure t)
 #+END_SRC
 
 * Projectile
@@ -222,14 +261,13 @@ Use [[https://github.com/motus/pig-mode][pig-mode]] with indent of 2:
 Use [[https://github.com/bbatsov/projectile][projectile]] to search for files:
 
 #+BEGIN_SRC emacs-lisp
-  (my/install 'projectile)
-  (my/install 'helm-projectile)
+  (use-package projectile
+    :init (setq projectile-project-root-files "~/workspace")
+    :ensure t)
 
-  ; (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
-  ; (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-
-  (helm-projectile)
-  (setq projectile-project-root-files "~/workspace")
+  (use-package helm-projectile
+    :after projectile
+    :ensure t)
 #+END_SRC
 
 * Javascript
@@ -252,22 +290,26 @@ Let's use [[https://github.com/seagle0128/doom-modeline][doom-modeline]]:
   ; (require 'all-the-icons)
   ; (all-the-icons-install-fonts)
 
-  (my/install 'doom-modeline)
-  (require 'doom-modeline)
-
-  (doom-modeline-mode 1)
+  (use-package doom-modeline
+    :config (doom-modeline-mode 1)
+    :ensure t)
 #+END_SRC
 
 * Protobuf
 
 #+BEGIN_SRC emacs-lisp
+  (use-package protobuf-mode
+    :mode "\\.proto\\'"
+    :ensure t)
   (my/install 'protobuf-mode)
 #+END_SRC
 
 * Thrift
 
 #+BEGIN_SRC emacs-lisp
-  (my/install 'thrift)
+  (use-package thrift
+    :mode "\\.thrift\\'"
+    :ensure t)
 #+END_SRC
 
 * Python
@@ -275,40 +317,30 @@ Let's use [[https://github.com/seagle0128/doom-modeline][doom-modeline]]:
 Let's start by installing modes for python and python documentation:
 
 #+BEGIN_SRC emacs-lisp
-  (my/install 'python)
-  (my/install 'flycheck-pyflakes)
+  (use-package python
+    :config
+      (custom-set-variables
+        '(python-indent-guess-indent-offset nil)
+	'(python-indent-offset 2))
+	(when (executable-find "ipython")
+	  (setq python-shell-interpreter "ipython"
+                python-shell-interpreter-args "-i")))
+
+  (use-package flycheck-pyflakes
+    :ensure t)
+
+  (use-package python-docstring
+    :hook ((python-mode . python-docstring-mode))
+    :ensure t)
 #+END_SRC
-
-We will use the current file indentation format and default to 2
-spaces for new files:
-
-#+BEGIN_SRC elisp :results silent
-  (custom-set-variables
-   '(python-indent-guess-indent-offset nil)
-   '(python-indent-offset 2))
-#+END_SRC
-
-This will help generating our docstring:
-
-#+BEGIN_SRC emacs-lisp
-  (my/install 'python-docstring)
-  (python-docstring-install)
-#+END_SRC
-
-This will help us use ipython as our shell instead of python:
-
-#+BEGIN_SRC emacs-lisp
-  (when (executable-find "ipython")
-    (setq python-shell-interpreter "ipython"
-          python-shell-interpreter-args "-i"))
-#+END_SRC
-
 * Scala
 
 Add support for scala:
 
 #+BEGIN_SRC emacs-lisp
-  (my/install 'scala-mode)
+  (use-package scala-mode
+    :mode "\\.scala\\'"
+    :ensure t)
 #+END_SRC
 
 * Sparql
@@ -316,13 +348,17 @@ Add support for scala:
 Add support for sparql:
 
 #+BEGIN_SRC emacs-lisp :results silent output
-  (my/install 'sparql-mode)
-  (require 'sparql-mode)
+  (use-package sparql-mode
+    :mode "\\.sparql\\'"
+    :ensure t)
 #+END_SRC
 
 * TeX
 
-#+BEGIN+_SRC emacs-list
+#+BEGIN_SRC emacs-lisp
+  (use-package auctex
+    :mode "\\.tex\\'"
+    :ensure t)
   (my/install 'auctex)
 #+END_SRC
 
@@ -331,14 +367,18 @@ Add support for sparql:
 XML is still useful sometimes, let's set us up for these cases:
 
 #+BEGIN_SRC emacs-lisp
-  (my/install 'auto-complete-nxml)
-  (my/install 'rnc-mode)
+  (use-package auto-complete-nxml
+    :mode "\\.xml\\'"
+    :init
+    ;; Keystroke to popup help about something at point.
+    (setq auto-complete-nxml-popup-help-key "C-:")
+    ;; Keystroke to toggle on/off automatic completion.
+    (setq auto-complete-nxml-toggle-automatic-key "C-c C-t")
+    :ensure t)
 
-  ;; Keystroke to popup help about something at point.
-  (setq auto-complete-nxml-popup-help-key "C-:")
-
-  ;; Keystroke to toggle on/off automatic completion.
-  (setq auto-complete-nxml-toggle-automatic-key "C-c C-t")
+  (use-package rnc-mode
+    :mode "\\.rnc\\'"
+    :ensure t)
 #+END_SRC
 
 * Whitespaces
@@ -350,36 +390,40 @@ Nobody likes trailing whitespaces, let's just remove them:
 #+END_SRC
 
 * Org-mode
-** Key bindings
 
 #+BEGIN_SRC emacs-lisp
-  (global-set-key "\C-cl" 'org-store-link)
-  (global-set-key "\C-ca" 'org-agenda)
-#+END_SRC
+  (use-package org
+    :mode "\\.org\\'"
 
-** Workflow
+    :bind (("C-c l" . org-store-link)
+           ("C-c c" . org-capture)
+           ("C-c a" . org-agenda)
+           ("C-c b" . org-iswitchb)
+           ("C-c C-w" . org-refile)
+           ("C-c j" . org-clock-goto)
+           ("C-c C-x C-o" . org-clock-out))
 
-Let's set the workflow for tasks:
+    :config
+      (setq org-todo-keywords '((sequence "TODO" "IN-PROGRESS" "BLOCKED" "|" "DONE" "DELEGATED")))
 
-#+BEGIN_SRC emacs-lisp
- (setq org-todo-keywords
-       '((sequence "TODO" "IN-PROGRESS" "BLOCKED" "|" "DONE" "DELEGATED")))
+      ;; Capture timestamp when tasks are done
+      (setq org-log-done t)
 
- ;; Capture timestamp when tasks are done
- (setq org-log-done t)
-#+END_SRC
+      ;; Make sure we don't kill the whole subtree when killing folded hearders
+      (setq org-ctrl-k-protect-subtree t)
 
-** org-babel
+      ;; Align tags in the headline
+      (setq org-tags-column t)
 
-Let's activate the language we care about:
-
-#+BEGIN_SRC emacs-lisp :results silent
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((emacs-lisp t)
-       (python . t)
-       (shell . t)
-       (sparql . t)))
+      ;; Prettify code blocks
+      (setq org-src-fontify-natively t)
+    :init
+      (org-babel-do-load-languages 'org-babel-load-languages
+        '((emacs-lisp t)
+	  (python . t)
+	  (shell . t)
+	  (sparql . t)))
+    :ensure t)
 #+END_SRC
 
 ** ox-hugo
@@ -388,9 +432,9 @@ Let's activate the language we care about:
 platform in org-mode.
 
 #+BEGIN_SRC emacs-lisp :results silent
-  (my/install 'ox-hugo)
-  (with-eval-after-load 'ox
-    (require 'ox-hugo))
+  (use-package ox-hugo
+    :after ox
+    :ensure t)
 #+END_SRC
 
 ** Appearance
@@ -399,27 +443,13 @@ First, let's start by configuring the appearance of top level items:
 
 #+BEGIN_SRC emacs-lisp
   ;; let's replace the stars with actual bullets
-  (my/install 'org-bullets)
-  (require 'org-bullets)
-
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-
-  ;; Align tags in the headline
-  (setq org-tags-column t)
-
-  ;; Prettify code blocks
-  (setq org-src-fontify-natively t)
+  (use-package org-bullets
+    :hook (org-mode . org-bullets-mode)
+    :ensure t)
 #+END_SRC
 
 Make sure to run =M-x all-the-icons-install-fonts= at least once on
 your system if the icons do not render well.
-
-** Miscellaneous
-
-#+BEGIN_SRC emacs-lisp
- ;; Make sure we don't kill the whole subtree when killing folded hearders
- (setq org-ctrl-k-protect-subtree t)
-#+END_SRC
 
 * Epilogue
 

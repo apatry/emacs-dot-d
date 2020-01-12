@@ -9,7 +9,9 @@
  '(org-agenda-files (quote ("~/Documents/today.org")))
  '(package-selected-packages
    (quote
-    (ox-hugo sparql-mode nix-mode helm helm-config auctex sphinx-mode sphinx-doc pig-mode solarized-theme magit groovy-mode graphviz-dot-mode gradle-mode git-gutter+))))
+    (ox-hugo sparql-mode nix-mode helm helm-config auctex sphinx-mode sphinx-doc pig-mode solarized-theme magit groovy-mode graphviz-dot-mode gradle-mode git-gutter+)))
+ '(python-indent-guess-indent-offset nil)
+ '(python-indent-offset 2))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
