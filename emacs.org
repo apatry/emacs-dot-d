@@ -393,8 +393,6 @@ Nobody likes trailing whitespaces, let's just remove them:
 
 #+BEGIN_SRC emacs-lisp
   (use-package org
-    :mode "\\.org\\'"
-
     :bind (("C-c l" . org-store-link)
            ("C-c c" . org-capture)
            ("C-c a" . org-agenda)
@@ -422,8 +420,7 @@ Nobody likes trailing whitespaces, let's just remove them:
         '((emacs-lisp t)
 	  (python . t)
 	  (shell . t)
-	  (sparql . t)))
-    :ensure t)
+	  (sparql . t))))
 #+END_SRC
 
 ** ox-hugo
