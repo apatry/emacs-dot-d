@@ -107,7 +107,7 @@ emacs -l .emacs.d/init.el -batch --eval '(message "Hello, world!")'  1.09s user 
 
   ;; uncomment the following lines to gather statistics about package load time
   ;; run 'use-package-report to see statistics
-  (setq use-package-compute-statistics t)
+  ; (setq use-package-compute-statistics t)
 
   ;; make sure packages are updated when new versions are available
   (use-package auto-package-update
@@ -251,7 +251,6 @@ Add support for groovy files:
 it yet, so this config might be suboptimal:
 
 #+BEGIN_SRC emacs-lisp
-
 (use-package helm
   :bind (("M-x" . helm-M-x)
          ("C-x r b" . helm-filtered-bookmarks)
@@ -473,6 +472,9 @@ Nobody likes trailing whitespaces, let's just remove them:
 
       ;; Prettify code blocks
       (setq org-src-fontify-natively t)
+
+      ;; use python3 by default
+      (setq org-babel-python-command "python3")
 
       (org-babel-do-load-languages 'org-babel-load-languages
         '((emacs-lisp t)
