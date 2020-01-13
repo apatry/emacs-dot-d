@@ -99,16 +99,24 @@ emacs -l .emacs.d/init.el -batch --eval '(message "Hello, world!")'  1.09s user 
 #+END_VERBATIM
 
 #+BEGIN_SRC emacs-lisp
-(my/install 'use-package)
+  (my/install 'use-package)
 
-;; make sure packages are updated when new versions are available
-(use-package auto-package-update
-  :config
-  (setq auto-package-update-delete-old-versions t)
-  (setq auto-package-update-hide-results t)
-  (auto-package-update-maybe)
+  ;; This is needed to run the compiled version of this code.
+  ;; See https://github.com/jwiegley/use-package/issues/436
+  (require 'use-package)
 
-  :ensure t)
+  ;; uncomment the following lines to gather statistics about package load time
+  ;; run 'use-package-report to see statistics
+  (setq use-package-compute-statistics t)
+
+  ;; make sure packages are updated when new versions are available
+  (use-package auto-package-update
+    :config
+    (setq auto-package-update-delete-old-versions t)
+    (setq auto-package-update-hide-results t)
+    (auto-package-update-maybe)
+
+    :ensure t)
 #+END_SRC
 
 #+RESULTS:
@@ -148,6 +156,7 @@ markers when it detects an error. We want to enable it by default:
 
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck
+    :defer 2
     :config (global-flycheck-mode)
     :ensure t)
 #+END_SRC
@@ -180,8 +189,8 @@ I will give [[https://github.com/hlissner/emacs-doom-themes#features][doom-theme
 #+BEGIN_SRC emacs-lisp
   (use-package doom-themes
     :config
-    (load-theme 'doom-gruvbox t)
-    (doom-themes-org-config)
+      (load-theme 'doom-gruvbox t)
+      (doom-themes-org-config)
     :ensure t)
 #+END_SRC
 
@@ -201,8 +210,14 @@ Let's use magit to deal with git command from within emacs:
 
 #+BEGIN_SRC emacs-lisp
   (use-package magit
+   :bind ("C-x g" . magit-status)
+   :commands magit-status
    :ensure t)
 #+END_SRC
+
+Note that we load =magit= only when =magit-status= is called. This is
+because =magit= is the longest package to load at startup. Doing so
+improved my startup time by about 25%.
 
 We will also add git modification into the [[https://github.com/syohex/emacs-git-gutter][gutter]]:
 
@@ -258,23 +273,16 @@ sudo npm i -g bash-language-server
 
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-mode
-    :hook (prog-mode . lsp)
+    :hook (prog-mode . lsp-deferred)
     :ensure t)
 
   (use-package lsp-ui
-    :hook (lsp-mode lsp-ui-mode)
+    :hook (lsp-mode . lsp-ui-mode)
     :ensure t)
 
   (use-package company-lsp
     :after (company-mode lsp-mode)
     :config (push 'company-lsp company-backends)
-    :ensure t)
-
-  (use-package lsp-treemacs
-    :after lsp-mode
-    :config
-      (lsp-metals-treeview-enable t)
-      (setq lsp-metals-treeview-show-when-views-received t)
     :ensure t)
 
   (use-package lsp-java
@@ -311,22 +319,8 @@ Use [[https://github.com/motus/pig-mode][pig-mode]] with indent of 2:
 
 #+BEGIN_SRC emacs-lisp
   (use-package pig-mode
-    :init (setq pig-indent-level 2)
+    :config (setq pig-indent-level 2)
     :mode "\\.pig\\'"
-    :ensure t)
-#+END_SRC
-
-* Projectile
-
-Use [[https://github.com/bbatsov/projectile][projectile]] to search for files:
-
-#+BEGIN_SRC emacs-lisp
-  (use-package projectile
-    :init (setq projectile-project-root-files "~/workspace")
-    :ensure t)
-
-  (use-package helm-projectile
-    :after projectile
     :ensure t)
 #+END_SRC
 
@@ -378,6 +372,7 @@ Let's start by installing modes for python and python documentation:
 
 #+BEGIN_SRC emacs-lisp
   (use-package python
+    :mode ("\\.py\\'" . python-mode)
     :config
       (custom-set-variables
         '(python-indent-guess-indent-offset nil)
@@ -387,6 +382,7 @@ Let's start by installing modes for python and python documentation:
                 python-shell-interpreter-args "-i")))
 
   (use-package flycheck-pyflakes
+    :after (python flycheck)
     :ensure t)
 
   (use-package python-docstring
@@ -429,7 +425,7 @@ XML is still useful sometimes, let's set us up for these cases:
 #+BEGIN_SRC emacs-lisp
   (use-package auto-complete-nxml
     :mode "\\.xml\\'"
-    :init
+    :config
     ;; Keystroke to popup help about something at point.
     (setq auto-complete-nxml-popup-help-key "C-:")
     ;; Keystroke to toggle on/off automatic completion.
@@ -453,6 +449,8 @@ Nobody likes trailing whitespaces, let's just remove them:
 
 #+BEGIN_SRC emacs-lisp
   (use-package org
+    :mode ("\\.org\\'" . org-mode)
+
     :bind (("C-c l" . org-store-link)
            ("C-c c" . org-capture)
            ("C-c a" . org-agenda)
@@ -475,7 +473,7 @@ Nobody likes trailing whitespaces, let's just remove them:
 
       ;; Prettify code blocks
       (setq org-src-fontify-natively t)
-    :init
+
       (org-babel-do-load-languages 'org-babel-load-languages
         '((emacs-lisp t)
 	  (python . t)
