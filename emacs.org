@@ -473,6 +473,11 @@ Nobody likes trailing whitespaces, let's just remove them:
       ;; Prettify code blocks
       (setq org-src-fontify-natively t)
 
+      ;; configure org-capture
+      (setq org-capture-templates
+        '(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
+	   "* TODO %?\n  %i")))
+
       ;; use python3 by default
       (setq org-babel-python-command "python3")
 
