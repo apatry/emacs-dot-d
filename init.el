@@ -27,5 +27,5 @@
 	(message "Tangling %s to %s." source compiled)
 	(org-babel-load-file source))
     (progn
-      (message "Skip compilation of %s, reusing %s." source compiled)
+      (message "Skip tangling of %s, reusing %s directly." source compiled)
       (load compiled))))
