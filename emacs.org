@@ -375,10 +375,10 @@ Let's start by installing modes for python and python documentation:
     :config
       (custom-set-variables
         '(python-indent-guess-indent-offset nil)
-	'(python-indent-offset 2))
+	'(python-indent-offset 4))
 	(when (executable-find "ipython")
 	  (setq python-shell-interpreter "ipython"
-                python-shell-interpreter-args "-i")))
+                python-shell-interpreter-args "--simple-prompt -i")))
 
   (use-package flycheck-pyflakes
     :after (python flycheck)
@@ -386,8 +386,18 @@ Let's start by installing modes for python and python documentation:
 
   (use-package python-docstring
     :hook ((python-mode . python-docstring-mode))
+    :ensure t
+    :config
+      ;; reformat on save
+      (python-black-on-save-mode))
+
+  (use-package python-black
+    :after python
     :ensure t)
 #+END_SRC
+
+#+RESULTS:
+
 * Scala
 
 Add support for scala:
@@ -459,7 +469,9 @@ Nobody likes trailing whitespaces, let's just remove them:
            ("C-c C-x C-o" . org-clock-out))
 
     :config
-      (setq org-todo-keywords '((sequence "TODO" "IN-PROGRESS" "BLOCKED" "|" "DONE" "DELEGATED")))
+      (setq org-todo-keywords '((sequence
+      "TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
+      "|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
 
       ;; Capture timestamp when tasks are done
       (setq org-log-done t)
