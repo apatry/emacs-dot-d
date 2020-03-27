@@ -386,14 +386,14 @@ Let's start by installing modes for python and python documentation:
 
   (use-package python-docstring
     :hook ((python-mode . python-docstring-mode))
+    :ensure t)
+
+  (use-package python-black
+    :after python
     :ensure t
     :config
       ;; reformat on save
       (python-black-on-save-mode))
-
-  (use-package python-black
-    :after python
-    :ensure t)
 #+END_SRC
 
 #+RESULTS:
