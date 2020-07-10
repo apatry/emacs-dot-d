@@ -348,13 +348,27 @@ Let's use [[https://github.com/seagle0128/doom-modeline][doom-modeline]]:
     :ensure t)
 #+END_SRC
 
+* Projectile
+
+Let's configure [[https://github.com/bbatsov/projectile][projectile]] and it helm ui to make it easy to browse in
+project:
+
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile
+    :config
+      (setq projectile-project-search-path '("~/workspace"))
+      (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+      (projectile-mode +1)
+      (helm-projectile-on)
+    :ensure t)
+#+END_SRC
+
 * Protobuf
 
 #+BEGIN_SRC emacs-lisp
   (use-package protobuf-mode
     :mode "\\.proto\\'"
     :ensure t)
-  (my/install 'protobuf-mode)
 #+END_SRC
 
 * Thrift
@@ -391,9 +405,7 @@ Let's start by installing modes for python and python documentation:
   (use-package python-black
     :after python
     :ensure t
-    :config
-      ;; reformat on save
-      (python-black-on-save-mode))
+    :hook ((python-mode . python-black-on-save-mode)))
 #+END_SRC
 
 #+RESULTS:
@@ -461,12 +473,12 @@ Nobody likes trailing whitespaces, let's just remove them:
     :mode ("\\.org\\'" . org-mode)
 
     :bind (("C-c l" . org-store-link)
-           ("C-c c" . org-capture)
-           ("C-c a" . org-agenda)
-           ("C-c b" . org-iswitchb)
-           ("C-c C-w" . org-refile)
-           ("C-c j" . org-clock-goto)
-           ("C-c C-x C-o" . org-clock-out))
+	   ("C-c c" . org-capture)
+	   ("C-c a" . org-agenda)
+	   ("C-c b" . org-iswitchb)
+	   ("C-c C-w" . org-refile)
+	   ("C-c j" . org-clock-goto)
+	   ("C-c C-x C-o" . org-clock-out))
 
     :config
       (setq org-todo-keywords '((sequence
@@ -487,14 +499,14 @@ Nobody likes trailing whitespaces, let's just remove them:
 
       ;; configure org-capture
       (setq org-capture-templates
-        '(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
+	'(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
 	   "* TODO %?\n  %i")))
 
       ;; use python3 by default
       (setq org-babel-python-command "python3")
 
       (org-babel-do-load-languages 'org-babel-load-languages
-        '((emacs-lisp t)
+	'((emacs-lisp t)
 	  (python . t)
 	  (shell . t)
 	  (sparql . t))))
