@@ -413,7 +413,14 @@ Let's start by installing modes for python and python documentation:
     :hook ((python-mode . python-black-on-save-mode)))
 #+END_SRC
 
-#+RESULTS:
+** Poetry
+
+Configure [[https://github.com/galaunay/poetry.el][poetry.el]]:
+
+#+BEGIN_SRC emacs-lisp
+  (use-package poetry
+    :ensure t)
+#+END_SRC
 
 * Scala
 
@@ -517,6 +524,19 @@ Nobody likes trailing whitespaces, let's just remove them:
 	  (sparql . t))))
 #+END_SRC
 
+** citeproc-org
+
+Add support for bibtex style citations via [[https://github.com/andras-simonyi/citeproc-org#installation][citeproc-org]]:
+
+#+BEGIN_SRC emacs-lisp
+(use-package citeproc-org
+  :after org
+  :config
+    (citeproc-org-setup)
+  :ensure t)
+
+#+END_SRC
+
 ** ox-hugo
 
 [[https://ox-hugo.scripter.co/][ox-hugo]] is an org-mode exporter allowing to blog with the [[https://gohugo.io][Hugo]]
@@ -525,6 +545,16 @@ platform in org-mode.
 #+BEGIN_SRC emacs-lisp :results silent
   (use-package ox-hugo
     :after ox
+    :ensure t)
+#+END_SRC
+
+** org-noter
+
+[[https://github.com/weirdNox/org-noter][org-noter]] allows us to take note about PDF documents directly in emacs:
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-noter
+    :after org
     :ensure t)
 #+END_SRC
 
