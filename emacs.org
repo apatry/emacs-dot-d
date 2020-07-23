@@ -354,6 +354,11 @@ Let's configure [[https://github.com/bbatsov/projectile][projectile]] and it hel
 project:
 
 #+BEGIN_SRC emacs-lisp
+  (use-package helm-projectile
+    :after (helm projectile)
+    :config (helm-projectile-on)
+    :ensure t)
+
   (use-package projectile
     :config
       (setq projectile-project-search-path '("~/workspace"))
