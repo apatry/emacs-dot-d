@@ -9,7 +9,7 @@
  '(org-agenda-files (quote ("~/Documents/today.org")))
  '(package-selected-packages
    (quote
-    (python-black org ox-hugo sparql-mode nix-mode helm helm-config auctex sphinx-mode sphinx-doc pig-mode solarized-theme magit groovy-mode graphviz-dot-mode gradle-mode git-gutter+)))
+    (org-roam python-black org ox-hugo sparql-mode nix-mode helm helm-config auctex sphinx-mode sphinx-doc pig-mode solarized-theme magit groovy-mode graphviz-dot-mode gradle-mode git-gutter+)))
  '(python-indent-guess-indent-offset nil)
  '(python-indent-offset 2))
 (custom-set-faces

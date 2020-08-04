@@ -558,6 +558,23 @@ platform in org-mode.
     :ensure t)
 #+END_SRC
 
+** org-roam
+
+[[https://www.orgroam.com][org-roam]] is a knowledge management system built on top of org-mode:
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-roam
+    :after org
+    :config
+      (setq org-roam-directory "~/org-roam")
+      (make-directory "~/org-roam" t)
+      (org-roam-mode)
+    :ensure t)
+#+END_SRC
+
+#+RESULTS:
+: t
+
 ** Appearance
 
 First, let's start by configuring the appearance of top level items:
