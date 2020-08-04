@@ -521,7 +521,10 @@ Nobody likes trailing whitespaces, let's just remove them:
 	'((emacs-lisp t)
 	  (python . t)
 	  (shell . t)
-	  (sparql . t))))
+	  (sparql . t)))
+
+  :init
+    (add-hook 'org-mode-hook #'auto-fill-mode))
 #+END_SRC
 
 ** citeproc-org
