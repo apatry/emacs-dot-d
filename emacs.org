@@ -348,23 +348,49 @@ Let's use [[https://github.com/seagle0128/doom-modeline][doom-modeline]]:
     :ensure t)
 #+END_SRC
 
+* Pdf-tools
+
+PDF tools is tricky to get working on Mac. Make sure to execute the
+following:
+
+#+begin_src bash
+brew tap dunn/emacs
+brew install --HEAD pdf-tools
+#+end_src
+
+This recipe was taken from https://emacs.stackexchange.com/a/22591/28370:
+
+#+begin_src emacs-lisp
+;;; Install epdfinfo via 'brew install pdf-tools' and then install the
+;;; pdf-tools elisp via the use-package below. To upgrade the epdfinfo
+;;; server, just do 'brew upgrade pdf-tools' prior to upgrading to newest
+;;; pdf-tools package using Emacs package system. If things get messed
+;;; up, just do 'brew uninstall pdf-tools', wipe out the elpa
+;;; pdf-tools package and reinstall both as at the start.
+(use-package pdf-tools
+  :ensure t
+  :config
+  (custom-set-variables
+    '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
+  (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
+  (pdf-tools-install)
+#+end_src
 * Projectile
 
 Let's configure [[https://github.com/bbatsov/projectile][projectile]] and it helm ui to make it easy to browse in
 project:
 
 #+BEGIN_SRC emacs-lisp
-  (use-package helm-projectile
-    :after (helm projectile)
-    :config (helm-projectile-on)
-    :ensure t)
-
   (use-package projectile
     :config
       (setq projectile-project-search-path '("~/workspace"))
       (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
       (projectile-mode +1)
-      (helm-projectile-on)
+    :ensure t)
+
+  (use-package helm-projectile
+    :after (helm projectile)
+    :config (helm-projectile-on)
     :ensure t)
 #+END_SRC
 
@@ -527,18 +553,45 @@ Nobody likes trailing whitespaces, let's just remove them:
     (add-hook 'org-mode-hook #'auto-fill-mode))
 #+END_SRC
 
-** citeproc-org
+** helm-bibtex
 
-Add support for bibtex style citations via [[https://github.com/andras-simonyi/citeproc-org#installation][citeproc-org]]:
+[[https://github.com/tmalsburg/helm-bibtex][helm-bibtex]] support searching quickly through a bibliography and
+managing reading notes:
 
-#+BEGIN_SRC emacs-lisp
-(use-package citeproc-org
-  :after org
-  :config
-    (citeproc-org-setup)
-  :ensure t)
+#+begin_src emacs-lisp
+  (use-package helm-bibtex
+    :after helm
+    :config
+      (setq bibtex-completion-bibliography "~/org-roam/bibliography.bib")
+      (setq bibtex-completion-library-path "~/org-roam/pdfs")
+      (setq bibtex-completion-notes-path "~/org-roam")
 
-#+END_SRC
+      ;; Default template for notes. This template is compatible with
+      ;; both org-roam and org-noter.
+      (setq bibtex-completion-notes-template-multiple-files
+	(concat
+	  "#+TITLE: ${=key=}: ${title}\n"
+	  "#+ROAM_KEY: cite:${=key=}\n"
+	  "\n"
+	  "* ${title}\n"
+	  ":PROPERTIES:\n"
+	  ":Custom_ID: ${=key=}\n"
+	  ":NOTER_DOCUMENT: pdfs/${=key=}.pdf\n"
+	  ":AUTHOR: ${author-abbrev}\n"
+	  ":JOURNAL: ${journaltitle}\n"
+	  ":DATE: ${date}\n"
+	  ":YEAR: ${year}\n"
+	  ":DOI: ${doi}\n"
+	  ":URL: ${url}\n"
+	  ":END:\n\n"))
+    :ensure t)
+#+end_src
+
+With this configuration, helm-bibtex is both compatible with org-noter
+(via the =NOTER_DOCUMENT= property) and org-roam (via the =ROAM_KEY=
+attribute).
+
+This configuration is greatly inspired by https://rgoswami.me/posts/org-note-workflow/.
 
 ** ox-hugo
 
@@ -570,7 +623,6 @@ platform in org-mode.
     :after org
     :config
       (setq org-roam-directory "~/org-roam")
-      (make-directory "~/org-roam" t)
       (org-roam-mode)
     :ensure t)
 #+END_SRC
