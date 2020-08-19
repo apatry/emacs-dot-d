@@ -593,6 +593,25 @@ attribute).
 
 This configuration is greatly inspired by https://rgoswami.me/posts/org-note-workflow/.
 
+** org-ref
+
+[[https://github.com/jkitchin/org-ref][org-ref]] makes it possible to cite publication using ~cite:key~ where
+the key is read from a bibtex file. We configure it in pair with
+~helm-bibtex~
+
+#+begin_src emacs-lisp
+(use-package org-ref
+    :after helm-bibtex
+    :config
+    (setq
+         org-ref-get-pdf-filename-function 'org-ref-get-pdf-filename-helm-bibtex
+         org-ref-default-bibliography (list bibtex-completion-bibliography)
+    ))
+#+end_src
+
+Later, I will figure out how to configure org-ref-arxiv to download
+pdf and bib reference from arxiv.org.
+
 ** ox-hugo
 
 [[https://ox-hugo.scripter.co/][ox-hugo]] is an org-mode exporter allowing to blog with the [[https://gohugo.io][Hugo]]
