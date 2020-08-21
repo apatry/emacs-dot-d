@@ -271,24 +271,37 @@ sudo npm i -g bash-language-server
 ** Installing the client
 
 #+BEGIN_SRC emacs-lisp
-  (use-package lsp-mode
-    :hook (prog-mode . lsp-deferred)
-    :ensure t)
+    (use-package lsp-mode
+      :hook ((java-mode . lsp)
+	      (python-mode . lsp)
+	      (scala-mode . lsp)
+	      ; (sh-mode . lsp)
+	      (sql-mode . lsp)
+	      (lsp-mode . lsp-enable-which-key-integration))
+      :commands lsp
+      :ensure t)
 
-  (use-package lsp-ui
-    :hook (lsp-mode . lsp-ui-mode)
-    :ensure t)
+  ;;   (use-package lsp-java
+  ;;     :ensure t)
 
-  (use-package company-lsp
-    :after (company-mode lsp-mode)
-    :config (push 'company-lsp company-backends)
-    :ensure t)
+  ;;   (use-package lsp-ui
+  ;;     :commands lsp-ui-mode
+  ;;     :ensure t)
 
-  (use-package lsp-java
-    :after lsp
-    :hook (java-mode . lsp)
-    :ensure t)
+  ;;   (use-package helm-lsp
+  ;;     :commands helm-lsp-workspace-symbol
+  ;;     :ensure t)
+
+  ;;   (use-package lsp-treemacs
+  ;;     :commands lsp-treemacs-errors-list
+  ;;     :ensure t)
+
+  ;; (use-package which-key
+  ;;     :config (which-key-mode)
+  ;;     :ensure t)
 #+END_SRC
+
+#+RESULTS:
 
 * Markdown
 
