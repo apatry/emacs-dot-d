@@ -614,12 +614,13 @@ the key is read from a bibtex file. We configure it in pair with
 
 #+begin_src emacs-lisp
 (use-package org-ref
-    :after helm-bibtex
-    :config
-    (setq
-         org-ref-get-pdf-filename-function 'org-ref-get-pdf-filename-helm-bibtex
-         org-ref-default-bibliography (list bibtex-completion-bibliography)
-    ))
+  :after helm-bibtex
+  :config
+    (setq org-ref-get-pdf-filename-function 'org-ref-get-pdf-filename-helm-bibtex)
+    (setq org-ref-default-bibliography (list "~/org-roam/bibliography.bib"))
+    (setq org-ref-pdf-directory "~/org-roam/pdfs")
+
+    (require 'org-ref-arxiv))
 #+end_src
 
 Later, I will figure out how to configure org-ref-arxiv to download
