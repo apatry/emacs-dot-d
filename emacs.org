@@ -42,7 +42,7 @@ some utilities that will help us get organized:
 
   ;; Initialize the package module, this must be after 'package-archives
   ;; has been set
-  (package-initialize)
+  (when (< emacs-major-version 27) (package-initialize))
 
   ;; Reloading the list of packages takes time, we will do it at most
   ;; once. This variable will be true if the list has already be
