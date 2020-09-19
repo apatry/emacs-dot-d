@@ -270,6 +270,18 @@ Counsel is the UI for ivy:
     :ensure t)
 #+end_src
 
+** ivy-explorer
+
+Display ivy completions in a grid instead of a list.
+
+#+begin_src emacs-lisp
+  (use-package ivy-explorer
+    :after counsel
+    :config
+      (ivy-explorer-mode 1)
+    :ensure t)
+#+end_src
+
 * Lsp
 
 ** Installing Requirements
