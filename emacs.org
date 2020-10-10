@@ -604,6 +604,10 @@ managing reading notes:
       (setq bibtex-completion-library-path "~/org-roam/pdfs")
       (setq bibtex-completion-notes-path "~/org-roam")
 
+      (setq ivy-re-builders-alist
+	    '((ivy-bibtex . ivy--regex-ignore-order)
+	      (t . ivy--regex-plus)))
+
       ;; Default template for notes. This template is compatible with
       ;; both org-roam and org-noter.
       (setq bibtex-completion-notes-template-multiple-files
@@ -678,9 +682,17 @@ platform in org-mode.
 #+BEGIN_SRC emacs-lisp
   (use-package org-roam
     :after org
+    :bind (:map org-roam-mode-map
+		(("C-c n l" . org-roam)
+		 ("C-c n f" . org-roam-find-file)
+		 ("C-c n g" . org-roam-graph))
+		:map org-mode-map
+		(("C-c n i" . org-roam-insert))
+		(("C-c n I" . org-roam-insert-immediate)))
     :config
       (setq org-roam-directory "~/org-roam")
-      (org-roam-mode)
+    :hook
+    (after-init . org-roam-mode)
     :ensure t)
 #+END_SRC
 
