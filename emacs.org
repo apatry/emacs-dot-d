@@ -456,12 +456,12 @@ Let's start by installing modes for python and python documentation:
   (use-package python
     :mode ("\\.py\\'" . python-mode)
     :config
-      (custom-set-variables
-        '(python-indent-guess-indent-offset nil)
-	'(python-indent-offset 4))
-	(when (executable-find "ipython")
-	  (setq python-shell-interpreter "ipython"
-                python-shell-interpreter-args "--simple-prompt -i")))
+    (custom-set-variables
+     '(python-indent-guess-indent-offset nil)
+     '(python-indent-offset 4))
+    (when (executable-find "ipython3")
+      (setq python-shell-interpreter "ipython3"
+	    python-shell-interpreter-args "-i --simple-prompt --gui=tk ")))
 
   (use-package flycheck-pyflakes
     :after (python flycheck)
