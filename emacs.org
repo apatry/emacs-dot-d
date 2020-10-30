@@ -242,6 +242,8 @@ Add support for groovy files:
 #+BEGIN_SRC emacs-lisp
   (use-package groovy-mode
     :mode "\\.groovy\\'\\|\\.gradle\\'"
+    :config
+      (setq groovy-indent-offset 2)
     :ensure t)
 #+END_SRC
 
@@ -294,34 +296,46 @@ sudo npm i -g bash-language-server
 ** Installing the client
 
 #+BEGIN_SRC emacs-lisp
-    (use-package lsp-mode
-      :hook ((java-mode . lsp)
-	      (python-mode . lsp)
-	      (scala-mode . lsp)
-	      ; (sh-mode . lsp)
-	      (sql-mode . lsp)
-	      (lsp-mode . lsp-enable-which-key-integration))
-      :commands lsp
-      :ensure t)
+  (use-package lsp-mode
+    :hook ((scala-mode . lsp)
+	    ; (sh-mode . lsp)
+	    (sql-mode . lsp)
+	    (lsp-mode . lsp-enable-which-key-integration))
+    :commands lsp
+    :config (setq lsp-metals-gradle-script "ligradle")
+    :ensure t)
 
-    (use-package lsp-java
-      :ensure t)
+  (use-package dap-mode
+    :ensure t)
 
-    (use-package lsp-ui
-      :commands lsp-ui-mode
-      :ensure t)
+  (use-package lsp-java
+    :after dap-mode
+    :hook (java-mode . lsp)
+    :ensure t)
 
-    (use-package lsp-ivy
-      :commands lsp-ivy-workspace-symbol
-      :ensure t)
+  ;; see https://github.com/emacs-lsp/lsp-python-ms for details
+  (use-package lsp-python-ms
+    :ensure t
+    :init (setq lsp-python-ms-auto-install-server t)
+    :hook (python-mode . (lambda ()
+			   (require 'lsp-python-ms)
+			   (lsp))))
 
-    (use-package lsp-treemacs
-      :commands lsp-treemacs-errors-list
-      :ensure t)
+  (use-package lsp-ui
+    :commands lsp-ui-mode
+    :ensure t)
 
-    (use-package which-key
-      :config (which-key-mode)
-      :ensure t)
+  (use-package lsp-ivy
+    :commands lsp-ivy-workspace-symbol
+    :ensure t)
+
+  (use-package lsp-treemacs
+    :commands lsp-treemacs-errors-list
+    :ensure t)
+
+  (use-package which-key
+    :config (which-key-mode)
+    :ensure t)
 #+END_SRC
 
 #+RESULTS:
@@ -642,13 +656,14 @@ the key is read from a bibtex file. We configure it in pair with
 ~ivy-bibtex~
 
 #+begin_src emacs-lisp
-    (use-package org-ref
-	:after ivy-bibtex
-	:config
-	(setq org-ref-get-pdf-filename-function 'org-ref-get-pdf-filename-ivy-bibtex)
-	(setq org-ref-default-bibliography (list bibtex-completion-bibliography))
-	(setq org-ref-pdf-directory "~/org-roam/pdfs")
-	(require 'org-ref-arxiv))
+  (use-package org-ref
+      :ensure t
+      :after ivy-bibtex
+      :config
+      (setq org-ref-get-pdf-filename-function 'org-ref-get-pdf-filename-ivy-bibtex)
+      (setq org-ref-default-bibliography (list bibtex-completion-bibliography))
+      (setq org-ref-pdf-directory "~/org-roam/pdfs")
+      (require 'org-ref-arxiv))
 #+end_src
 
 Later, I will figure out how to configure org-ref-arxiv to download
