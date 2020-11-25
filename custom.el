@@ -13,8 +13,7 @@
    (quote
     (org-ref org-roam python-black org ox-hugo sparql-mode nix-mode helm helm-config auctex sphinx-mode sphinx-doc pig-mode solarized-theme magit groovy-mode graphviz-dot-mode gradle-mode git-gutter+)))
  '(pdf-tools-handle-upgrades nil)
- '(python-indent-guess-indent-offset nil)
- '(python-indent-offset 2))
+ '(python-indent-guess-indent-offset nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
