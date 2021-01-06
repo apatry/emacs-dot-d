@@ -11,7 +11,7 @@
     ("~/org/projects.org" "~/Documents/communications.org" "~/Documents/today.org")))
  '(package-selected-packages
    (quote
-    (org-ref org-roam python-black org ox-hugo sparql-mode nix-mode helm helm-config auctex sphinx-mode sphinx-doc pig-mode solarized-theme magit groovy-mode graphviz-dot-mode gradle-mode git-gutter+)))
+    (py-isort ivy-hydra org-ref org-roam python-black org ox-hugo sparql-mode nix-mode helm helm-config auctex sphinx-mode sphinx-doc pig-mode solarized-theme magit groovy-mode graphviz-dot-mode gradle-mode git-gutter+)))
  '(pdf-tools-handle-upgrades nil)
  '(python-indent-guess-indent-offset nil))
 (custom-set-faces

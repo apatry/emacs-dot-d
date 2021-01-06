@@ -260,6 +260,19 @@ replacement for helm. Let's see how it goes:
     :ensure t)
 #+end_src
 
+** Hydra
+
+#+begin_src emacs-lisp
+  (use-package hydra
+    :ensure t)
+
+  (use-package ivy-hydra
+    :after (ivy hydra)
+    :ensure t)
+#+end_src
+
+#+RESULTS:
+
 ** Counsel
 
 Counsel is the UI for ivy:
@@ -382,6 +395,73 @@ its configuration:
  (setq js-indent-level 2)
 #+END_SRC
 
+* Mu4e
+
+[[https://www.djcbsoftware.nl/code/mu/mu4e/][mu4e]] is a mode to read emails in emacs. My config relies on =mbsync=
+to fetch emails. We assume that it has been setup properly. A good
+starting point is available [[https://rakhim.org/fastmail-setup-with-emacs-mu4e-and-mbsync-on-macos/][here]].
+
+#+begin_src emacs-lisp
+
+  (when (and (file-directory-p "/usr/share/emacs/site-lisp/mu4e")
+	     (file-directory-p "~/Maildir"))
+
+    ;; we assume that mu and mu4e have been installed already using our
+    ;; package manager (e.g. apt install mu4e)
+    (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
+    (require 'mu4e)
+
+    (setq
+     user-mail-address "alex@nlpfu.com"
+     user-full-name "Alexandre Patry")
+
+    (setq
+     ;; local mailbox
+     mu4e-maildir "~/Maildir"
+
+     ;; location for downloaded attachments
+     mu4e-attachments-dir "~/Downloads"
+
+     ;; configure mu4e imap directory
+     mu4e-sent-folder "/Sent"
+     mu4e-refile-folder "/Archive"
+     mu4e-drafts-folder "/Drafts"
+     mu4e-trash-folder "/Trash"
+
+     ;; command to update emails every 5 minutes (300 seconds)
+     mu4e-get-mail-command "mbsync -a"
+     mu4e-update-interval 300
+
+     ;; rename filse when moving (required by mbsync)
+     mu4e-change-filenames-when-moving t
+
+     ;; faster re-indexing of emails
+     mu4e-index-cleanup nil
+     mu4e-index-lazy-check t
+
+     ;; ui
+     mu4e-view-show-images t)
+
+    ;; configure imagemagick to handle images
+    (when (fboundp 'imagemagick-register-types)
+      (imagemagick-register-types))
+
+    ;; mu4e shortcut (e.g. ji will jump to inbox)
+    (setq mu4e-maildir-shortcuts
+	  '(("/INBOX" . ?i)
+	    ("/Sent" . ?s)
+	    ("/Trash" . ?t)
+	    ("/Drafts". ?d)))
+
+    ;; configure SMTP to send mails
+    (setq
+     message-send-mail-function   'smtpmail-send-it
+     smtpmail-default-smtp-server "smtp.fastmail.com"
+     smtpmail-smtp-server         "smtp.fastmail.com"
+     smtpmail-stream-type         'starttls
+     smtpmail-smtp-service        587))
+#+end_src
+
 * Modeline
 
 Let's use [[https://github.com/seagle0128/doom-modeline][doom-modeline]]:
@@ -477,10 +557,6 @@ Let's start by installing modes for python and python documentation:
       (setq python-shell-interpreter "ipython3"
 	    python-shell-interpreter-args "-i --simple-prompt --gui=tk ")))
 
-  (use-package flycheck-pyflakes
-    :after (python flycheck)
-    :ensure t)
-
   (use-package python-docstring
     :hook ((python-mode . python-docstring-mode))
     :ensure t)
@@ -489,7 +565,17 @@ Let's start by installing modes for python and python documentation:
     :after python
     :ensure t
     :hook ((python-mode . python-black-on-save-mode)))
+
+  (use-package py-isort
+    :after python
+    :ensure t
+    :hook (python-mode . py-isort-before-save)
+    :config
+    (setq py-isort-options '("--lines=88" "-m=3" "-tc" "-fgw=0" "-ca")))
 #+END_SRC
+
+#+RESULTS:
+| py-isort-before-save | py-isort-enable-on-save | python-black-on-save-mode | python-docstring-mode | doom-modeline-env-setup-python | (lambda nil (require (quote lsp-python-ms)) (lsp)) |
 
 ** Poetry
 
