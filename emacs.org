@@ -318,9 +318,6 @@ sudo npm i -g bash-language-server
     :config (setq lsp-metals-gradle-script "ligradle")
     :ensure t)
 
-  (use-package dap-mode
-    :ensure t)
-
   (use-package lsp-java
     :after dap-mode
     :hook (java-mode . lsp)
