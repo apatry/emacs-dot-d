@@ -410,7 +410,8 @@ starting point is available [[https://rakhim.org/fastmail-setup-with-emacs-mu4e-
 
     (setq
      user-mail-address "alex@nlpfu.com"
-     user-full-name "Alexandre Patry")
+     user-full-name "Alexandre Patry"
+     mail-user-agent 'mu4e-user-agent)
 
     (setq
      ;; local mailbox
