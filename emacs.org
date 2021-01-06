@@ -607,11 +607,23 @@ Add support for sparql:
 * TeX
 
 #+BEGIN_SRC emacs-lisp
-  (use-package auctex
-    :mode "\\.tex\\'"
-    :ensure t)
-  (my/install 'auctex)
+  (use-package tex-mode
+    :ensure auctex)
 #+END_SRC
+
+* Text
+
+Configuration for editing text:
+
+#+begin_src emacs-lisp
+  (use-package visual-fill-column
+    :hook (visual-line-mode . visual-fill-column-mode)
+    :ensure t)
+
+  (add-hook 'text-mode-hook #'visual-line-mode)
+#+end_src
+
+#+RESULTS:
 
 * XML
 
@@ -686,7 +698,7 @@ Nobody likes trailing whitespaces, let's just remove them:
 	  (sparql . t)))
 
   :init
-    (add-hook 'org-mode-hook #'auto-fill-mode))
+    (add-hook 'org-mode-hook #'visual-line-mode))
 #+END_SRC
 
 ** ivy-bibtex
