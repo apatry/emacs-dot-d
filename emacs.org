@@ -607,19 +607,10 @@ Add support for sparql:
 * TeX
 
 #+BEGIN_SRC emacs-lisp
-  (use-package tex-mode
-    :ensure t)
+  (use-package latex
+    :bind (:map LaTeX-mode-map ("<tab>" . org-cycle))
+    :ensure auctex)
 #+END_SRC
-
-Let's configure org-mode like folding in our latex documents:
-
-#+begin_src emacs-lisp
-  (use-package outline-magic
-    :after outline
-    :bind (("<tab>" . outline-cycle))
-    :hook (LaTeX-mode . outline-minor-mode)
-    :ensure t)
-#+end_src
 
 * Text
 
