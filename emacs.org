@@ -204,6 +204,19 @@ Setup auto-complete powered by company-mode:
     :ensure t)
 #+END_SRC
 
+* Elisp
+
+  Configuration for elisp programming. First we start by configuring [[https://github.com/abo-abo/lispy][lispy]] to make sure our parenthesis stay balanced:
+
+  #+begin_src emacs-lisp
+    (use-package lispy
+      :init
+      (add-hook 'emacs-lisp-mode-hook (lambda () (lispy-mode 1)))
+      :ensure t)
+
+    (add-hook 'emacs-lisp-mode-hook #'eldoc-mode)
+  #+end_src
+
 * Git
 
 Let's use magit to deal with git command from within emacs:
@@ -437,6 +450,9 @@ starting point is available [[https://rakhim.org/fastmail-setup-with-emacs-mu4e-
      mu4e-index-cleanup nil
      mu4e-index-lazy-check t
 
+     ;; let the recipient adjust the text width
+     mu4e-compose-format-flowed t
+
      ;; ui
      mu4e-view-show-images t)
 
@@ -451,14 +467,26 @@ starting point is available [[https://rakhim.org/fastmail-setup-with-emacs-mu4e-
 	    ("/Trash" . ?t)
 	    ("/Drafts". ?d)))
 
+    ;; Allows to view email in browser
+    (add-to-list 'mu4e-view-actions
+		 '("browser view" . mu4e-action-view-in-browser) t)
+    (add-to-list 'mu4e-view-actions
+		 '("xwidget" . mu4e-action-view-with-xwidget) t)
+
     ;; configure SMTP to send mails
     (setq
      message-send-mail-function   'smtpmail-send-it
      smtpmail-default-smtp-server "smtp.fastmail.com"
      smtpmail-smtp-server         "smtp.fastmail.com"
      smtpmail-stream-type         'starttls
-     smtpmail-smtp-service        587))
+     smtpmail-smtp-service        587)
+
+  ;; run mu4e in the background at startup
+  (mu4e t))
 #+end_src
+
+#+RESULTS:
+: 587
 
 * Modeline
 
@@ -583,6 +611,17 @@ Configure [[https://github.com/galaunay/poetry.el][poetry.el]]:
   (use-package poetry
     :ensure t)
 #+END_SRC
+
+* Rainbow Delimiters
+
+  Let's add some color into our parenthesis and brackets:
+
+  #+begin_src emacs-lisp
+    (use-package rainbow-delimiters
+     :init
+     (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+     :ensure t)
+  #+end_src
 
 * Scala
 
