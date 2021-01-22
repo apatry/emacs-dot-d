@@ -741,6 +741,15 @@ Nobody likes trailing whitespaces, let's just remove them:
     (add-hook 'org-mode-hook #'visual-line-mode))
 #+END_SRC
 
+** epresent
+
+[[https://github.com/eschulte/epresent][epresent]] can run org files in presentation mode using the ~epresent-run~ command:
+
+#+begin_src emacs-lisp :output nil
+(use-package epresent
+  :after org
+  :ensure t)
+#+end_src
 ** ivy-bibtex
 
 [[https://github.com/tmalsburg/helm-bibtex][ivy-bibtex]] supports searching quickly through a bibliography and
