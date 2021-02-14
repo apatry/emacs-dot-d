@@ -703,7 +703,6 @@ Nobody likes trailing whitespaces, let's just remove them:
 	   ("C-c a" . org-agenda)
 	   ("C-c b" . org-iswitchb)
 	   ("C-c C-w" . org-refile)
-	   ("C-c j" . org-clock-goto)
 	   ("C-c C-x C-o" . org-clock-out))
 
     :config
@@ -824,6 +823,25 @@ platform in org-mode.
     :after ox
     :ensure t)
 #+END_SRC
+
+** org-journal
+
+Add support for [[https://github.com/bastibe/org-journal][org-journal]] when the directory =~/journal= is found:
+
+#+begin_src emacs-lisp
+
+  (use-package org-journal
+   :if (file-directory-p "~/journal")
+   :config
+     (setq org-journal-dir "~/journal")
+     (setq org-journal-file-type 'daily)
+     (setq org-journal-date-format "%A, %d %B %Y")
+   :init
+     (setq org-journal-prefix-key "C-c j")
+   :ensure t)
+#+end_src
+
+Commands of org-journal are available under the prefix ~C-c j~. If it becomes cumbersome, it is straightforward to integrate org-journal with org's template capture.
 
 ** org-noter
 

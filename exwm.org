@@ -181,7 +181,7 @@ Control the desktop from emacs using well known programs ([[https://github.com/D
 autorandr --save profile-name
 #+end_src
 
-where the profile name is the name of the configuration (e.g. mobile, docked, ...).
+where the profile name is the name of the configuration (e.g. mobile, docked, ...). The resulting configuration is saved in the ~.config/autorandr~ directory.
 
 If the screen is yellowish, make sure to remove the /night mode/ before running ~autorandr~.
 
