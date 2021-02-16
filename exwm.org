@@ -7,7 +7,7 @@ This file is meant to be loaded only when emacs is used as a window manager. Thi
 The following packages need to be installed on the system for this configuration to work:
 
 #+begin_src sh :eval no
-sudo apt install autorandr picom suckless-tools xss-lock polybar pasystray blueman dunst notify-send
+sudo apt install autorandr picom suckless-tools xss-lock polybar pasystray blueman dunst notify-send ssh-askpass-gnome
 #+end_src
 
 * Startup Script
@@ -20,6 +20,10 @@ The following script will be used to start emacs in window management mode:
 
   # Enable screen locking on suspend
   xss-lock -- slock &
+
+  # Start ssh-agent so that we don't have to type the passphrase all the time
+  eval `ssh-agent`
+  ssh-add &
 
   # Start exwm
   exec dbus-launch --exit-with-session emacs -mm --debug-init -l /home/alex/.emacs.d/exwm/exwm.el
