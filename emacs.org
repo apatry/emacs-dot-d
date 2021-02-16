@@ -405,6 +405,16 @@ its configuration:
  (setq js-indent-level 2)
 #+END_SRC
 
+* Jinja
+
+Add support for jinja-mode:
+
+#+begin_src emacs-lisp
+(use-package jinja2-mode
+  :mode "\\.jinja\\'"
+  :ensure t)
+#+end_src
+
 * Mu4e
 
 [[https://www.djcbsoftware.nl/code/mu/mu4e/][mu4e]] is a mode to read emails in emacs. My config relies on =mbsync=
@@ -661,6 +671,7 @@ Configuration for editing text:
     :ensure t)
 
   (add-hook 'text-mode-hook #'visual-line-mode)
+  (setq fill-column 120)
 #+end_src
 
 #+RESULTS:
