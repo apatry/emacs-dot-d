@@ -492,6 +492,12 @@ starting point is available [[https://rakhim.org/fastmail-setup-with-emacs-mu4e-
 	    ("/Trash" . ?t)
 	    ("/Drafts". ?d)))
 
+    ;; mu4e bookmarks
+    (add-to-list 'mu4e-bookmarks
+           '(:name  "Follow-ups"
+	     :query "flag:flagged AND NOT flag:trashed AND NOT maildir:/Archive"
+             :key   ?f))
+
     ;; Allows to view email in browser
     (add-to-list 'mu4e-view-actions
 		 '("browser view" . mu4e-action-view-in-browser) t)
