@@ -573,6 +573,8 @@ project:
   (use-package projectile
     :config
       (setq projectile-project-search-path '("~/workspace"))
+    :init
+      (projectile-mode +1)
     :bind-keymap
       ("C-c p" . projectile-command-map)
     :ensure t)
