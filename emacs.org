@@ -644,7 +644,6 @@ Configure [[https://github.com/galaunay/poetry.el][poetry.el]]:
 #+BEGIN_SRC emacs-lisp
   (use-package poetry
     :commands poetry
-    :mode "\\.py"
     :ensure t)
 #+END_SRC
 
