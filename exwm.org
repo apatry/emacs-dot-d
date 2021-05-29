@@ -187,7 +187,7 @@ autorandr --save profile-name
 
 where the profile name is the name of the configuration (e.g. mobile, docked, ...). The resulting configuration is saved in the ~.config/autorandr~ directory.
 
-If the screen is yellowish, make sure to remove the /night mode/ before running ~autorandr~.
+If the screen is yellowish, make sure to remove the /night mode/ before running ~autorandr~. If this is a configuration where a laptop is docked, make sure the primary display in the external monitor (otherwise, all workspace will be mapped to the laptop screen).
 
 * Polybar
 
