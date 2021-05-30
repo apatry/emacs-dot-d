@@ -328,10 +328,20 @@ Display ivy completions in a grid instead of a list.
 
 ** Installing Requirements
 
-#+BEGIN_SRC sh
-pip3 install python-language-server
-sudo npm i -g bash-language-server
+#+BEGIN_SRC shell
+  pip3 install python-language-server
+  sudo npm i -g pyright
+  sudo npm i -g bash-language-server
 #+END_SRC
+
+To update to the latest of some of these:
+
+#+begin_src shell
+  sudo npm update -g pyright
+  sudo npm update -g bash-language-server
+#+end_src
+
+#+RESULTS:
 
 ** Installing the client
 
@@ -351,12 +361,11 @@ sudo npm i -g bash-language-server
     :ensure t)
 
   ;; see https://github.com/emacs-lsp/lsp-python-ms for details
-  (use-package lsp-python-ms
+  (use-package lsp-pyright
     :ensure t
     :mode "\\.py"
-    :init (setq lsp-python-ms-auto-install-server t)
     :hook (python-mode . (lambda ()
-			   (require 'lsp-python-ms)
+			   (require 'lsp-pyright)
 			   (lsp))))
 
   (use-package lsp-ui
