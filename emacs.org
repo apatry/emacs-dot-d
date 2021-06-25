@@ -573,6 +573,20 @@ This recipe was taken from https://emacs.stackexchange.com/a/22591/28370:
   (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
   (pdf-tools-install :no-query))
 #+end_src
+* Plantuml
+
+Once plantuml is downloaded under =~/.emacs.d/plantuml.jar=, it can be used in org-babel:
+
+#+begin_src emacs-lisp
+  (use-package plantuml-mode
+    :after org
+    :ensure t
+    :config
+      (setq org-plantuml-jar-path (expand-file-name "~/.emacs.d/plantuml.jar"))
+      (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
+  )
+#+end_src
+
 * Projectile
 
 Let's configure [[https://github.com/bbatsov/projectile][projectile]] and it's ivy ui to make it easy to browse in
@@ -746,9 +760,14 @@ Nobody likes trailing whitespaces, let's just remove them:
     :bind (("C-c l" . org-store-link)
 	   ("C-c c" . org-capture)
 	   ("C-c a" . org-agenda)
-	   ("C-c b" . org-iswitchb)
+	   ("C-c b" . org-switchb)
+	   ("C-c j" . org-journal-new-entry)
 	   ("C-c C-w" . org-refile)
 	   ("C-c C-x C-o" . org-clock-out))
+
+    :hook
+      ;; update inline image after code-blocks
+      ((org-babel-after-execute . org-redisplay-inline-images))
 
     :config
       (setq org-todo-keywords '((sequence
@@ -767,6 +786,9 @@ Nobody likes trailing whitespaces, let's just remove them:
       ;; Prettify code blocks
       (setq org-src-fontify-natively t)
 
+      ;; Do not write section number when exporting documents
+      (setq org-export-with-section-numbers nil)
+
       ;; configure org-capture
       (setq org-capture-templates
 	'(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
@@ -776,7 +798,8 @@ Nobody likes trailing whitespaces, let's just remove them:
       (setq org-babel-python-command "python3")
 
       (org-babel-do-load-languages 'org-babel-load-languages
-	'((emacs-lisp t)
+	'((emacs-lisp . t)
+	  (plantuml . t )
 	  (python . t)
 	  (shell . t)
 	  (sparql . t)))
