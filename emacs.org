@@ -939,16 +939,15 @@ Commands of org-journal are available under the prefix ~C-c j~. If it becomes cu
 #+BEGIN_SRC emacs-lisp
   (use-package org-roam
     :after org
-    :bind (:map org-roam-mode-map
-		(("C-c n l" . org-roam)
-		 ("C-c n f" . org-roam-find-file)
-		 ("C-c n g" . org-roam-graph))
-		:map org-mode-map
-		(("C-c n i" . org-roam-insert))
-		(("C-c n I" . org-roam-insert-immediate)))
-    :preface (setq org-roam-directory "~/org-roam")
+    :preface
+      (setq org-roam-v2-ack t)
+      (setq org-roam-directory "~/org-roam")
+
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+	   ("C-c n f" . org-roam-node-find))
+
     :if (file-directory-p org-roam-directory)
-    :hook (after-init . org-roam-mode)
+    :config (org-roam-setup)
     :ensure t)
 #+END_SRC
 
