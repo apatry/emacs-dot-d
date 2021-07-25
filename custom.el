@@ -8,11 +8,7 @@
  '(org-agenda-files
    '("~/org/projects.org" "~/Documents/communications.org" "~/Documents/today.org"))
  '(package-selected-packages
-<<<<<<< HEAD
    '(lsp-pyright esup org-journal epresent latex py-isort ivy-hydra org-ref org-roam python-black org ox-hugo sparql-mode nix-mode helm helm-config auctex sphinx-mode sphinx-doc pig-mode solarized-theme magit groovy-mode graphviz-dot-mode gradle-mode git-gutter+))
-=======
-   '(desktop-environment exwm lsp-pyright esup org-journal epresent latex py-isort ivy-hydra org-ref org-roam python-black org ox-hugo sparql-mode nix-mode helm helm-config auctex sphinx-mode sphinx-doc pig-mode solarized-theme magit groovy-mode graphviz-dot-mode gradle-mode git-gutter+))
->>>>>>> ade671a (Migrate to org-roam v2 configuration)
  '(pdf-tools-handle-upgrades nil)
  '(python-indent-guess-indent-offset nil)
  '(safe-local-variable-values

@@ -936,23 +936,74 @@ Commands of org-journal are available under the prefix ~C-c j~. If it becomes cu
 
 [[https://www.orgroam.com][org-roam]] is a knowledge management system built on top of org-mode:
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :results silent
   (use-package org-roam
-    :after org
     :preface
-      (setq org-roam-v2-ack t)
       (setq org-roam-directory "~/org-roam")
+      (setq org-roam-v2-ack t)
 
     :bind (("C-c n l" . org-roam-buffer-toggle)
 	   ("C-c n f" . org-roam-node-find))
 
     :if (file-directory-p org-roam-directory)
-    :config (org-roam-setup)
+    :config
+      (org-roam-setup)
+
+      ;; setup org-roam-protocol
+      (when window-system
+	(server-start)
+	(require 'org-roam-protocol))
+
+    ;; We force org-roam to load in order to make sure the browser
+    ;; integration work as soon a GUI emacs is started.
+    :defer 2
+
     :ensure t)
 #+END_SRC
 
-#+RESULTS:
-: t
+*** Taking notes from the browser
+
+Note taking in the browser is done in two steps:
+
+1. Setup a the desktop to recognize the mime type associated with org-protocole.
+2. Add a bookmarklet leveraging this new handler.
+3. Start a server for =org-protocol= to interact with external programs.
+
+For more details, see [[https://www.orgroam.com/manual.html#Org_002droam-Protocol][org-roam protocole the documentation]].
+
+**** Linux
+
+On Linux, we can =org-babel-tangle= this block:
+
+#+begin_src conf :tangle ~/.local/share/applications/org-protocol.desktop :mkdirp yes
+[Desktop Entry]
+Name=Org-Protocol
+Exec=emacsclient %u
+Icon=/usr/share/icons/hicolor/scalable/apps/emacs.svg
+Type=Application
+Terminal=false
+MimeType=x-scheme-handler/org-protocol
+#+end_src
+
+and register it with:
+
+#+begin_src sh :results silent
+  xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
+#+end_src
+
+**** Bookmarklet
+
+The following bookmarklet will summon org-roam from the browser:
+
+#+begin_src js
+  javascript:location.href =
+    'org-protocol://roam-ref?template=r&ref='
+    + encodeURIComponent(location.href)
+    + '&title='
+    + encodeURIComponent(document.title)
+    + '&body='
+    + encodeURIComponent(window.getSelection())
+#+end_src
 
 ** Appearance
 
