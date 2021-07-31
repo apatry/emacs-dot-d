@@ -354,8 +354,20 @@ To update to the latest of some of these:
     :config (setq lsp-metals-gradle-script "ligradle")
     :ensure t)
 
+  (define-minor-mode lsp-format-on-save-mode
+    "Toggle calling lsp-format-buffer on file save."
+
+    :init-value nil
+
+    ;; this code is called when the mode is enabled
+    ;; (lsp-format-on-save-mode will be defined) or disabled.
+    (if lsp-format-on-save-mode
+	(add-hook 'before-save-hook #'lsp-format-buffer)
+      (remove-hook 'before-save-hook #'lsp-format-buffer)))
+
   (use-package lsp-java
-    :hook (java-mode . lsp)
+    :hook (java-mode . (lambda () (lsp) (lsp-format-on-save-mode 1)))
+    :config (setq lsp-java-format-settings-url (expand-file-name "~/.emacs.d/java-codestyle.xml"))
     :ensure t)
 
   ;; see https://github.com/emacs-lsp/lsp-python-ms for details
@@ -420,13 +432,14 @@ Use [[https://github.com/motus/pig-mode][pig-mode]] with indent of 2:
 
 * Java
 
-Configure java:
+Configure java formatting:
 
 #+BEGIN_SRC emacs-lisp
   (add-hook 'java-mode-hook
-    (lambda ()
-      (setq c-basic-offset 2
-            tab-width 2)))
+	    (lambda ()
+	      (setq c-basic-offset 2
+		    indent-tabs-mode nil
+		    tab-width 2)))
 #+END_SRC
 
 * Javascript
@@ -725,10 +738,10 @@ Configuration for editing text:
 #+begin_src emacs-lisp
   (use-package visual-fill-column
     :hook (visual-line-mode . visual-fill-column-mode)
+    :config (setq fill-column 120)
     :ensure t)
 
   (add-hook 'text-mode-hook #'visual-line-mode)
-  (setq fill-column 120)
 #+end_src
 
 #+RESULTS:
@@ -763,58 +776,56 @@ Nobody likes trailing whitespaces, let's just remove them:
 * Org-mode
 
 #+BEGIN_SRC emacs-lisp
-  (use-package org
-    :mode ("\\.org\\'" . org-mode)
+    (use-package org
+      :mode ("\\.org\\'" . org-mode)
 
-    :bind (("C-c l" . org-store-link)
-	   ("C-c c" . org-capture)
-	   ("C-c a" . org-agenda)
-	   ("C-c b" . org-switchb)
-	   ("C-c j" . org-journal-new-entry)
-	   ("C-c C-w" . org-refile)
-	   ("C-c C-x C-o" . org-clock-out))
+      :bind (("C-c l" . org-store-link)
+	     ("C-c c" . org-capture)
+	     ("C-c a" . org-agenda)
+	     ("C-c b" . org-switchb)
+	     ("C-c j" . org-journal-new-entry)
+	     ("C-c C-w" . org-refile)
+	     ("C-c C-x C-o" . org-clock-out))
 
-    :hook
-      ;; update inline image after code-blocks
-      ((org-babel-after-execute . org-redisplay-inline-images))
+      :hook
+	;; update inline image after code-blocks
+	((org-babel-after-execute . org-redisplay-inline-images)
+	 (org-mode . visual-line-mode))
 
-    :config
-      (setq org-todo-keywords '((sequence
-      "TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
-      "|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
+      :config
+	(setq org-todo-keywords '((sequence
+	"TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
+	"|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
 
-      ;; Capture timestamp when tasks are done
-      (setq org-log-done t)
+	;; Capture timestamp when tasks are done
+	(setq org-log-done t)
 
-      ;; Make sure we don't kill the whole subtree when killing folded hearders
-      (setq org-ctrl-k-protect-subtree t)
+	;; Make sure we don't kill the whole subtree when killing folded hearders
+	(setq org-ctrl-k-protect-subtree t)
 
-      ;; Align tags in the headline
-      (setq org-tags-column -80)
+	;; Align tags in the headline
+	(setq org-tags-column -80)
 
-      ;; Prettify code blocks
-      (setq org-src-fontify-natively t)
+	;; Prettify code blocks
+	(setq org-src-fontify-natively t)
 
-      ;; Do not write section number when exporting documents
-      (setq org-export-with-section-numbers nil)
+	;; Do not write section number when exporting documents
+	(setq org-export-with-section-numbers nil)
 
-      ;; configure org-capture
-      (setq org-capture-templates
-	'(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
-	   "* TODO %?\n  %i")))
+	;; configure org-capture
+	(setq org-capture-templates
+	  '(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
+	     "* TODO %?\n  %i")))
 
-      ;; use python3 by default
-      (setq org-babel-python-command "python3")
+	;; use python3 by default
+	(setq org-babel-python-command "python3")
 
-      (org-babel-do-load-languages 'org-babel-load-languages
-	'((emacs-lisp . t)
-	  (plantuml . t )
-	  (python . t)
-	  (shell . t)
-	  (sparql . t)))
-
-  :init
-    (add-hook 'org-mode-hook #'visual-line-mode))
+	(org-babel-do-load-languages 'org-babel-load-languages
+	  '((emacs-lisp . t)
+	    (plantuml . t )
+	    (python . t)
+	    (shell . t)
+	    (sparql . t))))
 #+END_SRC
 
 ** epresent
