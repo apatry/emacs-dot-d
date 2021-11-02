@@ -153,6 +153,16 @@ reclaim back this space:
     (tool-bar-mode -1))
 #+END_SRC
 
+We will also pick-up our environment variable from the shell instead of from whatever Mac OSX gives us:
+
+#+begin_src emacs-lisp
+  (use-package exec-path-from-shell
+    :if (memq window-system '(mac ns x))
+    :config (exec-path-from-shell-initialize)
+    :demand t
+    :ensure t)
+#+end_src
+
 * Custom commands
 
 #+BEGIN_SRC emacs-lisp :results silent output
@@ -351,7 +361,8 @@ To update to the latest of some of these:
 	    (sql-mode . lsp)
 	    (lsp-mode . lsp-enable-which-key-integration))
     :commands lsp
-    :config (setq lsp-metals-gradle-script "ligradle")
+    :config
+    (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]build\\'")
     :ensure t)
 
   (define-minor-mode lsp-format-on-save-mode
@@ -577,24 +588,31 @@ brew tap dunn/emacs
 brew install --HEAD pdf-tools
 #+end_src
 
+#+RESULTS:
+
 This recipe was taken from https://emacs.stackexchange.com/a/22591/28370:
 
 #+begin_src emacs-lisp
-;;; Install epdfinfo via 'brew install pdf-tools' and then install the
-;;; pdf-tools elisp via the use-package below. To upgrade the epdfinfo
-;;; server, just do 'brew upgrade pdf-tools' prior to upgrading to newest
-;;; pdf-tools package using Emacs package system. If things get messed
-;;; up, just do 'brew uninstall pdf-tools', wipe out the elpa
-;;; pdf-tools package and reinstall both as at the start.
-(use-package pdf-tools
-  :ensure t
-  :magic ("%PDF" . pdf-view-mode)
-  :config
-  (custom-set-variables
-    '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
-  (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
-  (pdf-tools-install :no-query))
+  ;;; Install epdfinfo via 'brew install pdf-tools' and then install the
+  ;;; pdf-tools elisp via the use-package below. To upgrade the epdfinfo
+  ;;; server, just do 'brew upgrade pdf-tools' prior to upgrading to newest
+  ;;; pdf-tools package using Emacs package system. If things get messed
+  ;;; up, just do 'brew uninstall pdf-tools', wipe out the elpa
+  ;;; pdf-tools package and reinstall both as at the start.
+  (use-package pdf-tools
+    :ensure t
+    :magic ("%PDF" . pdf-view-mode)
+    :custom
+    (pdf-tools-handle-upgrades nil "Handle updgrades with brew.")
+    (pdf-view-use-scaling t "Enable scaling of images for higher resolution screens.")
+    (pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
+    :config
+    (defun frame-scale-factor ()
+      "Scale factor to use when rendering PDF. Without it, rendering is pixeleted on high-resolution screen."
+      4)
+    (pdf-tools-install :no-query))
 #+end_src
+
 * Plantuml
 
 Once plantuml is downloaded under =~/.emacs.d/plantuml.jar=, it can be used in org-babel:
@@ -776,56 +794,58 @@ Nobody likes trailing whitespaces, let's just remove them:
 * Org-mode
 
 #+BEGIN_SRC emacs-lisp
-    (use-package org
-      :mode ("\\.org\\'" . org-mode)
+  (use-package org
+    :mode ("\\.org\\'" . org-mode)
 
-      :bind (("C-c l" . org-store-link)
-	     ("C-c c" . org-capture)
-	     ("C-c a" . org-agenda)
-	     ("C-c b" . org-switchb)
-	     ("C-c j" . org-journal-new-entry)
-	     ("C-c C-w" . org-refile)
-	     ("C-c C-x C-o" . org-clock-out))
+    :bind (("C-c l" . org-store-link)
+	   ("C-c c" . org-capture)
+	   ("C-c a" . org-agenda)
+	   ("C-c b" . org-switchb)
+	   ("C-c j" . org-journal-new-entry)
+	   ("C-c C-w" . org-refile)
+	   ("C-c C-x C-o" . org-clock-out))
 
-      :hook
-	;; update inline image after code-blocks
-	((org-babel-after-execute . org-redisplay-inline-images)
-	 (org-mode . visual-line-mode))
+    :hook
+      ;; update inline image after code-blocks
+      ((org-babel-after-execute . org-redisplay-inline-images)
+       (org-mode . visual-line-mode))
 
-      :config
-	(setq org-todo-keywords '((sequence
-	"TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
-	"|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
+    :config
+      (setq org-todo-keywords '((sequence
+      "TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
+      "|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
 
-	;; Capture timestamp when tasks are done
-	(setq org-log-done t)
+      ;; Capture timestamp when tasks are done
+      (setq org-log-done t)
 
-	;; Make sure we don't kill the whole subtree when killing folded hearders
-	(setq org-ctrl-k-protect-subtree t)
+      ;; Make sure we don't kill the whole subtree when killing folded hearders
+      (setq org-ctrl-k-protect-subtree t)
 
-	;; Align tags in the headline
-	(setq org-tags-column -80)
+      ;; Align tags in the headline
+      (setq org-tags-column -80)
 
-	;; Prettify code blocks
-	(setq org-src-fontify-natively t)
+      ;; Prettify code blocks
+      (setq org-src-fontify-natively t)
 
-	;; Do not write section number when exporting documents
-	(setq org-export-with-section-numbers nil)
+      ;; Do not write section number when exporting documents
+      (setq org-export-with-section-numbers nil)
 
-	;; configure org-capture
-	(setq org-capture-templates
-	  '(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
-	     "* TODO %?\n  %i")))
+      ;; configure org-capture
+      (setq org-capture-templates
+	'(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
+	   "* TODO %?\n  %i")))
 
-	;; use python3 by default
-	(setq org-babel-python-command "python3")
+      ;; use python3 by default
+      (setq org-babel-python-command "python3")
 
-	(org-babel-do-load-languages 'org-babel-load-languages
-	  '((emacs-lisp . t)
-	    (plantuml . t )
-	    (python . t)
-	    (shell . t)
-	    (sparql . t))))
+      (org-babel-do-load-languages
+       'org-babel-load-languages
+       '((dot . t)
+	 (emacs-lisp . t)
+	 (plantuml . t )
+	 (python . t)
+	 (shell . t)
+	 (sparql . t))))
 #+END_SRC
 
 ** epresent
@@ -896,6 +916,10 @@ the key is read from a bibtex file. We configure it in pair with
       (setq org-ref-get-pdf-filename-function 'org-ref-get-pdf-filename-ivy-bibtex)
       (setq org-ref-default-bibliography (list bibtex-completion-bibliography))
       (setq org-ref-pdf-directory "~/org-roam/pdfs")
+
+      ;; make sure to support bibtex
+      (setq  org-latex-pdf-process
+       '("latexmk -shell-escape -bibtex -pdf %f"))
       (require 'org-ref-arxiv))
 #+end_src
 
