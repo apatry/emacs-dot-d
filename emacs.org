@@ -218,6 +218,17 @@ I will give [[https://github.com/hlissner/emacs-doom-themes#features][doom-theme
     :ensure t)
 #+END_SRC
 
+* Avy
+
+Setup [[https://github.com/abo-abo/avy][avy]] to quickly jump anywhere in the screen:
+
+#+begin_src emacs-lisp
+  (use-package avy
+    :ensure t
+    :config
+    (global-set-key (kbd "C-:") 'avy-goto-char))
+#+end_src
+
 * Company
 
 Setup auto-complete powered by company-mode:
@@ -867,32 +878,32 @@ managing reading notes:
     :after ivy
     :commands ivy-bibtex
     :config
-      (setq bibtex-completion-bibliography "~/org-roam/bibliography.bib")
-      (setq bibtex-completion-library-path "~/org-roam/pdfs")
-      (setq bibtex-completion-notes-path "~/org-roam")
+    (setq bibtex-completion-bibliography '("~/org-roam/bibliography.bib"))
+    (setq bibtex-completion-library-path '("~/org-roam/pdfs"))
+    (setq bibtex-completion-notes-path "~/org-roam")
 
-      (setq ivy-re-builders-alist
-	    '((ivy-bibtex . ivy--regex-ignore-order)
-	      (t . ivy--regex-plus)))
+    (setq ivy-re-builders-alist
+	  '((ivy-bibtex . ivy--regex-ignore-order)
+	    (t . ivy--regex-plus)))
 
-      ;; Default template for notes. This template is compatible with
-      ;; both org-roam and org-noter.
-      (setq bibtex-completion-notes-template-multiple-files
-	(concat
-	  "#+TITLE: ${=key=}: ${title}\n"
-	  "#+ROAM_KEY: cite:${=key=}\n"
-	  "\n"
-	  "* ${title}\n"
-	  ":PROPERTIES:\n"
-	  ":Custom_ID: ${=key=}\n"
-	  ":NOTER_DOCUMENT: pdfs/${=key=}.pdf\n"
-	  ":AUTHOR: ${author-abbrev}\n"
-	  ":JOURNAL: ${journaltitle}\n"
-	  ":DATE: ${date}\n"
-	  ":YEAR: ${year}\n"
-	  ":DOI: ${doi}\n"
-	  ":URL: ${url}\n"
-	  ":END:\n\n"))
+    ;; Default template for notes. This template is compatible with
+    ;; both org-roam and org-noter.
+    (setq bibtex-completion-notes-template-multiple-files
+	  (concat
+	   "#+TITLE: ${=key=}: ${title}\n"
+	   "#+ROAM_KEY: cite:${=key=}\n"
+	   "\n"
+	   "* ${title}\n"
+	   ":PROPERTIES:\n"
+	   ":Custom_ID: ${=key=}\n"
+	   ":NOTER_DOCUMENT: pdfs/${=key=}.pdf\n"
+	   ":AUTHOR: ${author-abbrev}\n"
+	   ":JOURNAL: ${journaltitle}\n"
+	   ":DATE: ${date}\n"
+	   ":YEAR: ${year}\n"
+	   ":DOI: ${doi}\n"
+	   ":URL: ${url}\n"
+	   ":END:\n\n"))
     :ensure t)
 #+end_src
 
@@ -909,18 +920,21 @@ the key is read from a bibtex file. We configure it in pair with
 ~ivy-bibtex~
 
 #+begin_src emacs-lisp
-  (use-package org-ref
-      :ensure t
-      :after ivy-bibtex
-      :config
-      (setq org-ref-get-pdf-filename-function 'org-ref-get-pdf-filename-ivy-bibtex)
-      (setq org-ref-default-bibliography (list bibtex-completion-bibliography))
-      (setq org-ref-pdf-directory "~/org-roam/pdfs")
+  ;; async is required to download pdfs
+  (use-package async
+    :ensure t)
 
-      ;; make sure to support bibtex
-      (setq  org-latex-pdf-process
-       '("latexmk -shell-escape -bibtex -pdf %f"))
-      (require 'org-ref-arxiv))
+  (use-package org-ref
+    :ensure t
+    :after (async ivy-bibtex)
+    :config
+
+    ;; (setq org-ref-get-pdf-filename-function 'org-ref-get-pdf-filename-ivy-bibtex)
+
+    ;; make sure to support bibtex
+    (setq  org-latex-pdf-process
+	   '("latexmk -shell-escape -bibtex -pdf %f"))
+    (require 'org-ref-arxiv))
 #+end_src
 
 Later, I will figure out how to configure org-ref-arxiv to download
