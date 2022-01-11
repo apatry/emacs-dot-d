@@ -879,8 +879,8 @@ managing reading notes:
     :commands ivy-bibtex
     :config
     (setq bibtex-completion-bibliography '("~/org-roam/bibliography.bib"))
-    (setq bibtex-completion-library-path '("~/org-roam/pdfs"))
-    (setq bibtex-completion-notes-path "~/org-roam")
+    (setq bibtex-completion-library-path '("~/org-roam/pdfs/"))
+    (setq bibtex-completion-notes-path "~/org-roam/")
 
     (setq ivy-re-builders-alist
 	  '((ivy-bibtex . ivy--regex-ignore-order)
@@ -950,6 +950,25 @@ platform in org-mode.
     :after ox
     :ensure t)
 #+END_SRC
+
+
+** ox-taskjuggler
+
+[[https://taskjuggler.org/][Taskjuggler]] is a text-based project management tool that can be used from org-mode using [[https://orgmode.org/worg/exporters/taskjuggler/ox-taskjuggler.html][ox-taskjuggler]].
+
+A pre-requisite is to install task juggler:
+
+#+begin_src bash
+gem install taskjuggler
+#+end_src
+
+Once task juggler is installed, we need to enable its org-mode exporter ([[https://github.com/emacsmirror/org-contrib/blob/master/lisp/ox-taskjuggler.el][source]]):
+
+#+begin_src emacs-lisp
+  (use-package ox-taskjuggler
+    :after ox
+    :load-path "~/.emacs.d/elisp/")
+#+end_src
 
 ** org-journal
 
