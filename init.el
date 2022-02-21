@@ -21,3 +21,4 @@
     (progn
       (message "Skip tangling of %s, reusing %s directly." source compiled)
       (load compiled))))
+(put 'narrow-to-region 'disabled nil)

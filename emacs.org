@@ -206,6 +206,20 @@ Let's also have more backup per file as suggested [[http://stackoverflow.com/a/1
     version-control t)
 #+END_SRC
 
+* Clojure
+
+For clojure we need clojure-mode to take care of code editing and cider to manage our REPL:
+
+#+begin_src emacs-lisp
+  (use-package clojure-mode
+    :ensure t)
+
+  (use-package cider
+    :after clojure-mode
+    :hook (clojure-mode . cider-mode)
+    :ensure t)
+#+end_src
+
 * Color theme
 
 I will give [[https://github.com/hlissner/emacs-doom-themes#features][doom-themes]] a try:
@@ -245,7 +259,8 @@ Setup auto-complete powered by company-mode:
 
   #+begin_src emacs-lisp
     (use-package lispy
-      :hook (emacs-lisp-mode . lispy-mode)
+      :hook ((clojure-mode . lispy-mode)
+	     (emacs-lisp-mode . lispy-mode))
       :ensure t)
 
     (add-hook 'emacs-lisp-mode-hook #'eldoc-mode)
@@ -345,6 +360,20 @@ Display ivy completions in a grid instead of a list.
     :ensure t)
 #+end_src
 
+* Julia
+
+Configure emacs to code in Julia:
+
+#+begin_src emacs-lisp
+  (use-package julia-mode
+    :mode "\\.jl\\'"
+    :ensure t)
+
+  (use-package julia-repl
+    :hook (julia-mode . julia-repl-mode)
+    :ensure t)
+#+end_src
+
 * Lsp
 
 ** Installing Requirements
@@ -368,9 +397,10 @@ To update to the latest of some of these:
 
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-mode
-    :hook ((scala-mode . lsp)
-	    (sql-mode . lsp)
-	    (lsp-mode . lsp-enable-which-key-integration))
+    :hook ((clojure-mode . lsp)
+	   (scala-mode . lsp)
+	   (sql-mode . lsp)
+	   (lsp-mode . lsp-enable-which-key-integration))
     :commands lsp
     :config
     (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]build\\'")
@@ -390,6 +420,12 @@ To update to the latest of some of these:
   (use-package lsp-java
     :hook (java-mode . (lambda () (lsp) (lsp-format-on-save-mode 1)))
     :config (setq lsp-java-format-settings-url (expand-file-name "~/.emacs.d/java-codestyle.xml"))
+    :ensure t)
+
+  (use-package lsp-julia
+    :after julia-mode
+    :hook (julia-mode . (lambda () (lsp) (lsp-format-on-save-mode 1)))
+    :init (setq lsp-julia-default-environment "~/.julia/environments/v1.7")
     :ensure t)
 
   ;; see https://github.com/emacs-lsp/lsp-python-ms for details
@@ -490,7 +526,6 @@ to fetch emails. We assume that it has been setup properly. A good
 starting point is available [[https://rakhim.org/fastmail-setup-with-emacs-mu4e-and-mbsync-on-macos/][here]].
 
 #+begin_src emacs-lisp
-
   (when (and (file-directory-p "/usr/share/emacs/site-lisp/mu4e")
 	     (file-directory-p "~/Maildir"))
 
@@ -499,23 +534,69 @@ starting point is available [[https://rakhim.org/fastmail-setup-with-emacs-mu4e-
     (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
     (require 'mu4e)
 
-    (setq
-     user-mail-address "alex@nlpfu.com"
-     user-full-name "Alexandre Patry"
-     mail-user-agent 'mu4e-user-agent)
+    (setq mu4e-contexts
+	  `(,(make-mu4e-context
+	      :name "fastmail"
+	      :enter-func (lambda () (mu4e-message "Entering fastmail context"))
+	      :leave-func (lambda () (mu4e-message "Leaving fastmail context"))
+	      :match-func (lambda (msg)
+			    (when msg
+			      (string-match-p "^/fastmail/" (mu4e-message-field msg :maildir))))
+	      :vars '((user-mail-address . "alex@nlpfu.com")
+		      (user-full-name . "Alexandre Patry")
+
+		      ;; configure mu4e imap directory
+		      (mu4e-sent-folder . "/fastmail/Sent Items")
+		      (mu4e-refile-folder . "/fastmail/Archive")
+		      (mu4e-drafts-folder . "/fastmail/Drafts")
+		      (mu4e-trash-folder . "/fastmail/Trash")
+
+		      ;; mu4e shortcut (e.g. ji will jump to inbox)
+		      (mu4e-maildir-shortcuts .
+		       (("/fastmail/INBOX" . ?i)
+			("/fastmail/Sent Items" . ?s)
+			("/fastmail/Trash" . ?t)
+			("/fastmail/Drafts". ?d)))
+
+		      ;; set smtp server
+		      (smtpmail-default-smtp-server . "smtp.fastmail.com")
+		      (smtpmail-smtp-server . "smtp.fastmail.com")
+		      (smtpmail-stream-type . starttls)
+		      (smtpmail-smtp-service . 587)))
+
+	    ,(make-mu4e-context
+	      :name "gmail"
+	      :enter-func (lambda () (mu4e-message "Entering gmail context"))
+	      :leave-func (lambda () (mu4e-message "Leaving gmail context"))
+	      :match-func (lambda (msg)
+			    (when msg
+			      (string-match-p "^/gmail/" (mu4e-message-field msg :maildir))))
+	      :vars '((user-mail-address . "textjuicer@gmail.com")
+		      (user-full-name . "Alexandre Patry")
+
+		      ;; configure mu4e imap directory
+		      (mu4e-sent-folder . "/gmail/[Gmail]/Messages envoy&AOk-s")
+		      (mu4e-drafts-folder . "/gmail/[Gmail]/Brouillons")
+		      (mu4e-trash-folder . "/gmail/[Gmail]/Corbeille")
+
+		      ;; mu4e shortcut (e.g. ji will jump to inbox)
+		      (mu4e-maildir-shortcuts .
+		       (("/gmail/INBOX" . ?i)
+			("/gmail/[Gmail]/Messages envoy&AOk-s" . ?s)
+			("/gmail/[Gmail]/Corbeille" . ?t)
+			("/gmail/[Gmain]/Brouillons". ?d)))
+
+		      ;; set smtp server
+		      (smtpmail-smtp-server . "smtp.gmail.com")
+		      (smtpmail-stream-type . starttls)
+		      (smtpmail-smtp-service . 587)))))
+
+    (setq mail-user-agent 'mu4e-user-agent)
+    (setq message-send-mail-function 'smtpmail-send-it)
 
     (setq
-     ;; local mailbox
-     mu4e-maildir "~/Maildir"
-
      ;; location for downloaded attachments
      mu4e-attachments-dir "~/Downloads"
-
-     ;; configure mu4e imap directory
-     mu4e-sent-folder "/Sent"
-     mu4e-refile-folder "/Archive"
-     mu4e-drafts-folder "/Drafts"
-     mu4e-trash-folder "/Trash"
 
      ;; command to update emails every 5 minutes (300 seconds)
      mu4e-get-mail-command "mbsync -a"
@@ -538,18 +619,6 @@ starting point is available [[https://rakhim.org/fastmail-setup-with-emacs-mu4e-
     (when (fboundp 'imagemagick-register-types)
       (imagemagick-register-types))
 
-    ;; mu4e shortcut (e.g. ji will jump to inbox)
-    (setq mu4e-maildir-shortcuts
-	  '(("/INBOX" . ?i)
-	    ("/Sent" . ?s)
-	    ("/Trash" . ?t)
-	    ("/Drafts". ?d)))
-
-    ;; mu4e bookmarks
-    (add-to-list 'mu4e-bookmarks
-           '(:name  "Follow-ups"
-	     :query "flag:flagged AND NOT flag:trashed AND NOT maildir:/Archive"
-             :key   ?f))
 
     ;; Allows to view email in browser
     (add-to-list 'mu4e-view-actions
@@ -557,16 +626,9 @@ starting point is available [[https://rakhim.org/fastmail-setup-with-emacs-mu4e-
     (add-to-list 'mu4e-view-actions
 		 '("xwidget" . mu4e-action-view-with-xwidget) t)
 
-    ;; configure SMTP to send mails
-    (setq
-     message-send-mail-function   'smtpmail-send-it
-     smtpmail-default-smtp-server "smtp.fastmail.com"
-     smtpmail-smtp-server         "smtp.fastmail.com"
-     smtpmail-stream-type         'starttls
-     smtpmail-smtp-service        587)
-
-  ;; run mu4e in the background at startup
-  (mu4e t))
+    ;; run mu4e in the background at startup
+    (mu4e-context-switch nil "fastmail")
+    (mu4e t))
 #+end_src
 
 #+RESULTS:
@@ -614,13 +676,14 @@ This recipe was taken from https://emacs.stackexchange.com/a/22591/28370:
     :ensure t
     :magic ("%PDF" . pdf-view-mode)
     :custom
-    (pdf-tools-handle-upgrades nil "Handle updgrades with brew.")
-    (pdf-view-use-scaling t "Enable scaling of images for higher resolution screens.")
+    ;; (pdf-view-use-scaling t "Enable scaling of images for higher resolution screens.")
     (pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
     :config
-    (defun frame-scale-factor ()
-      "Scale factor to use when rendering PDF. Without it, rendering is pixeleted on high-resolution screen."
-      4)
+    (setq pdf-tools-handle-upgrades nil) ; Use brew upgrade pdf-tools instead.
+    (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
+    ;; (defun frame-scale-factor ()
+    ;;   "Scale factor to use when rendering PDF. Without it, rendering is pixeleted on high-resolution screen."
+    ;;   4)
     (pdf-tools-install :no-query))
 #+end_src
 
@@ -847,16 +910,17 @@ Nobody likes trailing whitespaces, let's just remove them:
 	   "* TODO %?\n  %i")))
 
       ;; use python3 by default
-      (setq org-babel-python-command "python3")
+      (setq org-babel-python-command "python3"
+	    org-babel-clojure-backend 'cider)
 
-      (org-babel-do-load-languages
-       'org-babel-load-languages
-       '((dot . t)
-	 (emacs-lisp . t)
-	 (plantuml . t )
-	 (python . t)
-	 (shell . t)
-	 (sparql . t))))
+      (org-babel-do-load-languages 'org-babel-load-languages
+				   '((clojure . t)
+				     (emacs-lisp . t)
+				     (plantuml . t )
+				     (python . t)
+				     (shell . t)
+				     (sparql . t)
+				     (sqlite . t))))
 #+END_SRC
 
 ** epresent
