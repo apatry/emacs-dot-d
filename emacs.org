@@ -163,6 +163,14 @@ We will also pick-up our environment variable from the shell instead of from wha
     :ensure t)
 #+end_src
 
+* Built-in Configurations
+
+Refresh buffers when files are changed on disk:
+
+#+begin_src emacs-lisp
+  (global-auto-revert-mode)
+#+end_src
+
 * Custom commands
 
 #+BEGIN_SRC emacs-lisp :results silent output
