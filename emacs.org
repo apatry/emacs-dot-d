@@ -876,26 +876,26 @@ Nobody likes trailing whitespaces, let's just remove them:
 * Org-mode
 
 #+BEGIN_SRC emacs-lisp
-  (use-package org
-    :mode ("\\.org\\'" . org-mode)
+    (use-package org
+      :mode ("\\.org\\'" . org-mode)
 
-    :bind (("C-c l" . org-store-link)
-	   ("C-c c" . org-capture)
-	   ("C-c a" . org-agenda)
-	   ("C-c b" . org-switchb)
-	   ("C-c j" . org-journal-new-entry)
-	   ("C-c C-w" . org-refile)
-	   ("C-c C-x C-o" . org-clock-out))
+      :bind (("C-c l" . org-store-link)
+	     ("C-c c" . org-capture)
+	     ("C-c a" . org-agenda)
+	     ("C-c b" . org-switchb)
+	     ("C-c j" . org-journal-new-entry)
+	     ("C-c C-w" . org-refile)
+	     ("C-c C-x C-o" . org-clock-out))
 
-    :hook
+      :hook
       ;; update inline image after code-blocks
       ((org-babel-after-execute . org-redisplay-inline-images)
        (org-mode . visual-line-mode))
 
-    :config
+      :config
       (setq org-todo-keywords '((sequence
-      "TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
-      "|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
+				 "TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
+				 "|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
 
       ;; Capture timestamp when tasks are done
       (setq org-log-done t)
@@ -914,8 +914,11 @@ Nobody likes trailing whitespaces, let's just remove them:
 
       ;; configure org-capture
       (setq org-capture-templates
-	'(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
-	   "* TODO %?\n  %i")))
+	    '(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
+	       "* TODO %?\n  %i")
+	      ("j" "Journal entry." plain (function org-journal-find-location)
+	       "** I am grateful for\n** What would make today great?\n** Daily affirmation\n** Three amazing things that happened today\n** How could I have made today even better in less than 5 minutes"
+	       :jump-to-captured t :immediate-finish t)))
 
       ;; use python3 by default
       (setq org-babel-python-command "python3"
@@ -1047,7 +1050,6 @@ Once task juggler is installed, we need to enable its org-mode exporter ([[https
 Add support for [[https://github.com/bastibe/org-journal][org-journal]] when the directory =~/journal= is found:
 
 #+begin_src emacs-lisp
-
   (use-package org-journal
    :if (file-directory-p "~/journal")
    :defer t
@@ -1058,6 +1060,18 @@ Add support for [[https://github.com/bastibe/org-journal][org-journal]] when the
    :init
      (setq org-journal-prefix-key "C-c j")
    :ensure t)
+
+  (defun org-journal-find-location ()
+    ;; Open today's journal, but specify a non-nil prefix argument in order to
+    ;; inhibit inserting the heading; org-capture will insert the heading.
+    ;;
+    ;; This function was copied from
+    ;; https://github.com/bastibe/org-journal and is used to integrate
+    ;; org-journal with org-capture.
+    (org-journal-new-entry t)
+    (unless (eq org-journal-file-type 'daily)
+      (org-narrow-to-subtree))
+    (goto-char (point-max)))
 #+end_src
 
 Commands of org-journal are available under the prefix ~C-c j~. If it becomes cumbersome, it is straightforward to integrate org-journal with org's template capture.
