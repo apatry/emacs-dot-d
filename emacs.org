@@ -917,7 +917,7 @@ Nobody likes trailing whitespaces, let's just remove them:
 	    '(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
 	       "* TODO %?\n  %i")
 	      ("j" "Journal entry." plain (function org-journal-find-location)
-	       "** I am grateful for\n** What would make today great?\n** Daily affirmation\n** Three amazing things that happened today\n** How could I have made today even better in less than 5 minutes"
+	       "** Mental Health\n*** I am grateful for\n*** What would make today great?\n*** Daily affirmation\n*** Three amazing things that happened yesterday\n*** How could I have made yesterday even better in less than 5 minutes"
 	       :jump-to-captured t :immediate-finish t)))
 
       ;; use python3 by default
