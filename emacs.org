@@ -829,6 +829,10 @@ Add support for sparql:
   (use-package latex
     :bind (:map LaTeX-mode-map ("<tab>" . org-cycle))
     :ensure auctex)
+
+  (use-package org-fragtog
+    :hook (org-mode . org-fragtog-mode)
+    :ensure t)
 #+END_SRC
 
 * Text
@@ -1102,7 +1106,7 @@ Commands of org-journal are available under the prefix ~C-c j~. If it becomes cu
 
     :if (file-directory-p org-roam-directory)
     :config
-      (org-roam-setup)
+      (org-roam-db-autosync-mode)
 
       ;; setup org-roam-protocol
       (when window-system
