@@ -930,6 +930,7 @@ Nobody likes trailing whitespaces, let's just remove them:
 
       (org-babel-do-load-languages 'org-babel-load-languages
 				   '((clojure . t)
+				     (dot . t)
 				     (emacs-lisp . t)
 				     (plantuml . t )
 				     (python . t)
