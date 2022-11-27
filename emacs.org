@@ -297,6 +297,18 @@ We will also add git modification into the [[https://github.com/syohex/emacs-git
     :ensure t)
 #+END_SRC
 
+* Gnuplot
+
+Add a mode for gnuplot. Useful with org-babel:
+
+#+begin_src emacs-lisp
+  (use-package gnuplot-mode
+    :mode "\\.gnuplot"
+    :ensure t)
+
+  (use-package gnuplot
+    :ensure t)
+#+end_src
 * Graphviz
 
 #+BEGIN_SRC emacs-lisp
@@ -659,6 +671,15 @@ Let's use [[https://github.com/seagle0128/doom-modeline][doom-modeline]]:
     :ensure t)
 #+END_SRC
 
+* Org-ql
+
+[[https://github.com/alphapapa/org-ql][Org-ql]] offers a way to slice and dice my notes:
+
+#+begin_src emacs-lisp
+  (use-package org-ql
+    :ensure t)
+#+end_src
+
 * Pdf-tools
 
 PDF tools is tricky to get working on Mac. Make sure to execute the
@@ -880,63 +901,64 @@ Nobody likes trailing whitespaces, let's just remove them:
 * Org-mode
 
 #+BEGIN_SRC emacs-lisp
-    (use-package org
-      :mode ("\\.org\\'" . org-mode)
+  (use-package org
+    :mode ("\\.org\\'" . org-mode)
 
-      :bind (("C-c l" . org-store-link)
-	     ("C-c c" . org-capture)
-	     ("C-c a" . org-agenda)
-	     ("C-c b" . org-switchb)
-	     ("C-c j" . org-journal-new-entry)
-	     ("C-c C-w" . org-refile)
-	     ("C-c C-x C-o" . org-clock-out))
+    :bind (("C-c l" . org-store-link)
+	   ("C-c c" . org-capture)
+	   ("C-c a" . org-agenda)
+	   ("C-c b" . org-switchb)
+	   ("C-c j" . org-journal-new-entry)
+	   ("C-c C-w" . org-refile)
+	   ("C-c C-x C-o" . org-clock-out))
 
-      :hook
-      ;; update inline image after code-blocks
-      ((org-babel-after-execute . org-redisplay-inline-images)
-       (org-mode . visual-line-mode))
+    :hook
+    ;; update inline image after code-blocks
+    ((org-babel-after-execute . org-redisplay-inline-images)
+     (org-mode . visual-line-mode))
 
-      :config
-      (setq org-todo-keywords '((sequence
-				 "TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
-				 "|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
+    :config
+    (setq org-todo-keywords '((sequence
+			       "TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
+			       "|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
 
-      ;; Capture timestamp when tasks are done
-      (setq org-log-done t)
+    ;; Capture timestamp when tasks are done
+    (setq org-log-done t)
 
-      ;; Make sure we don't kill the whole subtree when killing folded hearders
-      (setq org-ctrl-k-protect-subtree t)
+    ;; Make sure we don't kill the whole subtree when killing folded hearders
+    (setq org-ctrl-k-protect-subtree t)
 
-      ;; Align tags in the headline
-      (setq org-tags-column -80)
+    ;; Align tags in the headline
+    (setq org-tags-column -80)
 
-      ;; Prettify code blocks
-      (setq org-src-fontify-natively t)
+    ;; Prettify code blocks
+    (setq org-src-fontify-natively t)
 
-      ;; Do not write section number when exporting documents
-      (setq org-export-with-section-numbers nil)
+    ;; Do not write section number when exporting documents
+    (setq org-export-with-section-numbers nil)
 
-      ;; configure org-capture
-      (setq org-capture-templates
-	    '(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
-	       "* TODO %?\n  %i")
-	      ("j" "Journal entry." plain (function org-journal-find-location)
-	       "** Mental Health\n*** I am grateful for\n*** What would make today great?\n*** Daily affirmation\n*** Three amazing things that happened yesterday\n*** How could I have made yesterday even better in less than 5 minutes"
-	       :jump-to-captured t :immediate-finish t)))
+    ;; configure org-capture
+    (setq org-capture-templates
+	  '(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
+	     "* TODO %?\n  %i")
+	    ("j" "Journal entry." plain (function org-journal-find-location)
+	     "** Mental Health\n*** I am grateful for\n*** What would make today great?\n*** Daily affirmation\n*** Three amazing things that happened yesterday\n*** How could I have made yesterday even better in less than 5 minutes"
+	     :jump-to-captured t :immediate-finish t)))
 
-      ;; use python3 by default
-      (setq org-babel-python-command "python3"
-	    org-babel-clojure-backend 'cider)
+    ;; use python3 by default
+    (setq org-babel-python-command "python3"
+	  org-babel-clojure-backend 'cider)
 
-      (org-babel-do-load-languages 'org-babel-load-languages
-				   '((clojure . t)
-				     (dot . t)
-				     (emacs-lisp . t)
-				     (plantuml . t )
-				     (python . t)
-				     (shell . t)
-				     (sparql . t)
-				     (sqlite . t))))
+    (org-babel-do-load-languages 'org-babel-load-languages
+				 '((clojure . t)
+				   (dot . t)
+				   (emacs-lisp . t)
+				   (gnuplot . t)
+				   (plantuml . t )
+				   (python . t)
+				   (shell . t)
+				   (sparql . t)
+				   (sqlite . t))))
 #+END_SRC
 
 ** epresent
