@@ -746,10 +746,11 @@ This recipe was taken from https://emacs.stackexchange.com/a/22591/28370:
     (pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
     :config
     (setq pdf-tools-handle-upgrades nil) ; Use brew upgrade pdf-tools instead.
-    (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
-    ;; (defun frame-scale-factor ()
+    (defun frame-scale-factor ()
     ;;   "Scale factor to use when rendering PDF. Without it, rendering is pixeleted on high-resolution screen."
-    ;;   4)
+      4)
+    (setq pdf-view-use-scaling t
+	  pdf-view-use-imagemagick nil)
     (pdf-tools-install :no-query))
 #+end_src
 
@@ -762,7 +763,9 @@ Once plantuml is downloaded under =~/.emacs.d/plantuml.jar=, it can be used in o
     :after org
     :ensure t
     :config
-      (setq org-plantuml-jar-path (expand-file-name "~/.emacs.d/plantuml.jar"))
+    (setq org-plantuml-jar-path "~/.emacs.d/plantuml.jar"
+	  plantuml-jar-path "~/.emacs.d/plantuml.jar"
+	  plantuml-default-exec-mode 'jar)
       (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
   )
 #+end_src
@@ -1198,6 +1201,8 @@ Once task juggler is installed, we need to enable its org-mode exporter ([[https
   ;;   :load-path "~/.emacs.d/elisp/")
 #+end_src
 
+
+
 ** org-journal
 
 Add support for [[https://github.com/bastibe/org-journal][org-journal]] when the directory =~/journal= is found:
@@ -1271,7 +1276,7 @@ Commands of org-journal are available under the prefix ~C-c j~. If it becomes cu
 
 *** Taking notes from the browser
 
-Note taking in the browser is done in two steps:
+Note taking in the browser is done in three steps:
 
 1. Setup a the desktop to recognize the mime type associated with org-protocole.
 2. Add a bookmarklet leveraging this new handler.
