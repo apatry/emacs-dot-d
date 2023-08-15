@@ -974,14 +974,13 @@ Configuration for editing text:
 #+end_src
 * Typescript
 
-Inspired by [[https://willschenk.com/howto/2021/setting_up_emacs_for_typescript_development/][this post]]:
-
 #+begin_src emacs-lisp
+  (setq-default indent-tabs-mode nil)
   (use-package typescript-mode
     :mode "\\.ts\\'"
+    :init (setq typescript-indent-level 4)
     :ensure t)
 #+end_src
-
 
 * XML
 
