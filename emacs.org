@@ -62,6 +62,26 @@ some utilities that will help us get organized:
 #+RESULTS:
 : my/install
 
+And let's install [[https://github.com/radian-software/straight.el][straight.el]]:
+
+#+begin_src emacs-lisp
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+	 (expand-file-name
+	  "straight/repos/straight.el/bootstrap.el"
+	  (or (bound-and-true-p straight-base-dir)
+	      user-emacs-directory)))
+	(bootstrap-version 7))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+	  (url-retrieve-synchronously
+	   "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+	   'silent 'inhibit-cookies)
+	(goto-char (point-max))
+	(eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
+#+end_src
+
 * Use Package
 
 At first, I was using =my/install= for all my packages. I decided to
@@ -296,6 +316,34 @@ We will also add git modification into the [[https://github.com/syohex/emacs-git
     :config (global-git-gutter-mode +1)
     :ensure t)
 #+END_SRC
+
+* Github Copilot
+
+From [[https://github.com/copilot-emacs/copilot.el][this documentation]]:
+
+#+begin_src emacs-lisp
+  ;; dependencies for copilot
+  (use-package dash :ensure t)
+  (use-package editorconfig :ensure t)
+  (use-package f :ensure t)
+  (use-package s :ensure t)
+
+  (use-package copilot
+    :after (dash editorconfig f s)
+    :bind (("C-c s a" . copilot-accept-completion)
+	   ("C-c s s" . copilot-complete)
+	   ("C-c s n" . copilot-next-completion)
+	   ("C-c s p" . copilot-previous-completion)
+	   ("C-c s g" . copilot-clear-overlay)
+	   ("C-c s w" . copilot-accept-completion-by-word)
+	   ("C-c s p" . copilot-accept-completion-by-paragraph)
+	   ("C-c s l" . copilot-accept-completion-by-line)
+	   ("C-c s m" . copilot-mode))
+
+    :hook (prog-mode . copilot-mode)
+    :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
+    :ensure t)
+#+end_src
 
 * Gnuplot
 
@@ -800,7 +848,7 @@ Let's start by installing modes for python and python documentation:
     :ensure t
     :hook (python-mode . py-isort-before-save)
     :config
-    (setq py-isort-options '("--lines=88" "-m=3" "-tc" "-fgw=0" "-ca")))
+    (setq py-isort-options '("--profile=black")))
 #+END_SRC
 
 #+RESULTS:
