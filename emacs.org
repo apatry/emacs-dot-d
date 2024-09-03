@@ -281,6 +281,17 @@ Setup auto-complete powered by company-mode:
     :ensure t)
 #+END_SRC
 
+* Docker
+
+Let's configure a functional setup to edit dockerfiles:
+
+#+begin_src emacs-lisp
+  (use-package
+    dockerfile-mode
+    :mode "Dockerfile"
+    :ensure t)
+#+end_src
+
 * Elisp
 
   Configuration for elisp programming. First we start by configuring [[https://github.com/abo-abo/lispy][lispy]] to make sure our parenthesis stay balanced:
@@ -343,6 +354,20 @@ From [[https://github.com/copilot-emacs/copilot.el][this documentation]]:
     :hook (prog-mode . copilot-mode)
     :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
     :ensure t)
+#+end_src
+
+And enable the use of copilot to chat with the code base:
+
+#+begin_src emacs-lisp
+  (use-package copilot-chat
+    :straight (:host github :repo "chep/copilot-chat.el" :files ("*.el"))
+    :after (request shell-maker)
+    :custom
+    (copilot-chat-frontend 'shell-maker)
+    :config
+    (require 'copilot-chat-shell-maker)
+    (push '(shell-maker . copilot-chat-shell-maker-init) copilot-chat-frontend-list)
+    (copilot-chat-shell-maker-init))
 #+end_src
 
 * Gnuplot
