@@ -11,12 +11,15 @@
      (time-file2 (my/last-modified file2)))
     (or (not time-file2) (time-less-p time-file2 time-file1))))
 
+
 (let
     ((source "~/.emacs.d/emacs.org")
      (compiled "~/.emacs.d/emacs.el"))
   (if (my/is-newer source compiled)
       (progn
 	(message "Tangling %s to %s." source compiled)
+	;; make sure we use the latest version of org when tangling the config
+	(use-package org :ensure t)
 	(org-babel-load-file source))
     (progn
       (message "Skip tangling of %s, reusing %s directly." source compiled)

@@ -191,6 +191,12 @@ Refresh buffers when files are changed on disk:
   (global-auto-revert-mode)
 #+end_src
 
+Disable the audio bell on errors:
+
+#+begin_src emacs-lisp
+  (setq ring-bell-function #'ignore)
+#+end_src
+
 * Custom commands
 
 #+BEGIN_SRC emacs-lisp :results silent output
@@ -259,6 +265,33 @@ I will give [[https://github.com/hlissner/emacs-doom-themes#features][doom-theme
       (doom-themes-org-config)
     :ensure t)
 #+END_SRC
+
+* Fonts
+
+Let's use Firacode:
+
+#+begin_src emacs-lisp
+  ;; Set default font (monospace font)
+  (set-face-attribute 'default nil
+  		    :family "FiraCode Nerd Font Mono"
+  		    :height 120
+  		    :weight 'normal
+  		    :width 'normal)
+
+  ;; Set variable pitch font
+  (set-face-attribute 'variable-pitch nil
+  		    :family "Fira Sans"
+  		    :height 120
+  		    :weight 'normal
+  		    :width 'normal)
+
+  ;; Set fixed-pitch font
+  (set-face-attribute 'fixed-pitch nil
+  		    :family "FiraCode Nerd Font Mono"
+  		    :height 120
+  		    :weight 'normal
+  		    :width 'normal)
+#+end_src
 
 * Avy
 
@@ -777,9 +810,12 @@ This recipe was taken from https://emacs.stackexchange.com/a/22591/28370:
   ;;; pdf-tools package using Emacs package system. If things get messed
   ;;; up, just do 'brew uninstall pdf-tools', wipe out the elpa
   ;;; pdf-tools package and reinstall both as at the start.
+
+  ;; check if /usr/local/bin/epdfinfo exists
   (use-package pdf-tools
     :ensure t
     :magic ("%PDF" . pdf-view-mode)
+    :if (not (eq system-type 'windows-nt))
     :custom
     ;; (pdf-view-use-scaling t "Enable scaling of images for higher resolution screens.")
     (pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
@@ -1046,22 +1082,24 @@ Nobody likes trailing whitespaces, let's just remove them:
     :mode ("\\.org\\'" . org-mode)
 
     :bind (("C-c l" . org-store-link)
-	   ("C-c c" . org-capture)
-	   ("C-c a" . org-agenda)
-	   ("C-c b" . org-switchb)
-	   ("C-c j" . org-journal-new-entry)
-	   ("C-c C-w" . org-refile)
-	   ("C-c C-x C-o" . org-clock-out))
+  	 ("C-c c" . org-capture)
+  	 ("C-c a" . org-agenda)
+  	 ("C-c b" . org-switchb)
+  	 ("C-c j" . org-journal-new-entry)
+  	 ("C-c C-w" . org-refile)
+  	 ("C-c C-x C-o" . org-clock-out))
 
     :hook
     ;; update inline image after code-blocks
     ((org-babel-after-execute . org-redisplay-inline-images)
-     (org-mode . visual-line-mode))
+     (org-mode . variable-pitch-mode)
+     (org-mode . visual-line-mode)
+     (org-mode . org-indent-mode))
 
     :config
     (setq org-todo-keywords '((sequence
-			       "TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
-			       "|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
+  			     "TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
+  			     "|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
 
     ;; Capture timestamp when tasks are done
     (setq org-log-done t)
@@ -1080,26 +1118,34 @@ Nobody likes trailing whitespaces, let's just remove them:
 
     ;; configure org-capture
     (setq org-capture-templates
-	  '(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
-	     "* TODO %?\n  %i")
-	    ("j" "Journal entry." plain (function org-journal-find-location)
-	     "** Mental Health\n*** I am grateful for\n*** What would make today great?\n*** Daily affirmation\n*** Three amazing things that happened yesterday\n*** How could I have made yesterday even better in less than 5 minutes"
-	     :jump-to-captured t :immediate-finish t)))
+  	'(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
+  	   "* TODO %?\n  %i")
+  	  ("j" "Journal entry." plain (function org-journal-find-location)
+  	   "** Mental Health\n*** I am grateful for\n*** What would make today great?\n*** Daily affirmation\n*** Three amazing things that happened yesterday\n*** How could I have made yesterday even better in less than 5 minutes"
+  	   :jump-to-captured t :immediate-finish t)))
 
     ;; use python3 by default
     (setq org-babel-python-command "python3"
-	  org-babel-clojure-backend 'cider)
+  	org-babel-clojure-backend 'cider)
 
     (org-babel-do-load-languages 'org-babel-load-languages
-				 '((clojure . t)
-				   (dot . t)
-				   (emacs-lisp . t)
-				   (gnuplot . t)
-				   (plantuml . t )
-				   (python . t)
-				   (shell . t)
-				   (sparql . t)
-				   (sqlite . t))))
+  			       '((clojure . t)
+  				 (dot . t)
+  				 (emacs-lisp . t)
+  				 (gnuplot . t)
+  				 (plantuml . t )
+  				 (python . t)
+  				 (shell . t)
+  				 (sparql . t)
+  				 (sqlite . t)))
+
+    (custom-set-faces
+     '(org-block ((t (:inherit fixed-pitch))))
+     '(org-table ((t (:inherit fixed-pitch))))
+     '(org-code ((t (:inherit fixed-pitch))))
+     '(org-verbatim ((t (:inherit fixed-pitch))))
+     '(org-meta-line ((t (:inherit fixed-pitch))))
+     '(org-document-info-keyword ((t (:inherit fixed-pitch))))))
 #+END_SRC
 
 ** epresent
