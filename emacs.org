@@ -62,87 +62,6 @@ some utilities that will help us get organized:
 #+RESULTS:
 : my/install
 
-And let's install [[https://github.com/radian-software/straight.el][straight.el]]:
-
-#+begin_src emacs-lisp
-  (defvar bootstrap-version)
-  (let ((bootstrap-file
-	 (expand-file-name
-	  "straight/repos/straight.el/bootstrap.el"
-	  (or (bound-and-true-p straight-base-dir)
-	      user-emacs-directory)))
-	(bootstrap-version 7))
-    (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-	  (url-retrieve-synchronously
-	   "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-	   'silent 'inhibit-cookies)
-	(goto-char (point-max))
-	(eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
-#+end_src
-
-* Use Package
-
-At first, I was using =my/install= for all my packages. I decided to
-test drive =use-package= and see how it could make things
-better. Before migrating to it, my startup time was:
-
-#+BEGIN_VERBATIM
-time emacs -l .emacs.d/init.el  -batch --eval '(message "Hello, world!")'
-Loading /etc/emacs/site-start.d/00debian.el (source)...
-Loading /etc/emacs/site-start.d/50dictionaries-common.el (source)...
-Loading debian-ispell...
-Loading /var/cache/dictionaries-common/emacsen-ispell-default.el (source)...
-Loading /var/cache/dictionaries-common/emacsen-ispell-dicts.el (source)...
-Tangled 35 code blocks from emacs.org
-Loading /home/alex/.emacs.d/emacs.el (source)...
-Loading /home/alex/.emacs.d/custom.el (source)...
-Loaded /home/alex/.emacs.d/emacs.el
-Hello, world!
-emacs -l .emacs.d/init.el -batch --eval '(message "Hello, world!")'  1.12s user 0.06s system 99% cpu 1.188 total
-#+END_VERBATIM
-
-After the migration, it was:
-
-#+BEGIN_VERBATIM
-time emacs -l .emacs.d/init.el  -batch --eval '(message "Hello, world!")'
-Loading /etc/emacs/site-start.d/00debian.el (source)...
-Loading /etc/emacs/site-start.d/50dictionaries-common.el (source)...
-Loading debian-ispell...
-Loading /var/cache/dictionaries-common/emacsen-ispell-default.el (source)...
-Loading /var/cache/dictionaries-common/emacsen-ispell-dicts.el (source)...
-Loading /home/alex/.emacs.d/emacs.el (source)...
-Loading /home/alex/.emacs.d/custom.el (source)...
-Loaded ~/.emacs.d/emacs.el
-Hello, world!
-emacs -l .emacs.d/init.el -batch --eval '(message "Hello, world!")'  1.09s user 0.03s system 99% cpu 1.124 total
-#+END_VERBATIM
-
-#+BEGIN_SRC emacs-lisp
-  (my/install 'use-package)
-
-  ;; This is needed to run the compiled version of this code.
-  ;; See https://github.com/jwiegley/use-package/issues/436
-  (require 'use-package)
-
-  ;; uncomment the following lines to gather statistics about package load time
-  ;; run 'use-package-report to see statistics
-  ; (setq use-package-compute-statistics t)
-
-  ;; make sure packages are updated when new versions are available
-  (use-package auto-package-update
-    :config
-    (setq auto-package-update-delete-old-versions t)
-    (setq auto-package-update-hide-results t)
-    (auto-package-update-maybe)
-
-    :ensure t)
-#+END_SRC
-
-#+RESULTS:
-: t
-
 * Startup time profiling
 
 Over time, my startup configuration gets slower, it is useful to profile the bottlenecks when it happens. The package [[https://github.com/jschaf/esup][esup]] can help with the =esup= command.
@@ -195,6 +114,26 @@ Disable the audio bell on errors:
 
 #+begin_src emacs-lisp
   (setq ring-bell-function #'ignore)
+#+end_src
+
+Set the default encoding:
+
+#+begin_src emacs-lisp
+  (prefer-coding-system 'utf-8)
+  (set-language-environment "UTF-8")
+  (set-default-coding-systems 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+#+end_src
+
+* Default Indent
+
+Let's set sane default values for indent. This helps make copilot happy:
+
+#+begin_src  emacs-lisp
+  ;; Fallback when a mode doesn't define its own offset
+  (setq-default standard-indent 2)  ; used by many modes
+  (setq-default tab-width 2)        ; doesn’t force tabs, just width
 #+end_src
 
 * Custom commands
@@ -925,6 +864,17 @@ Configure [[https://github.com/galaunay/poetry.el][poetry.el]]:
     :ensure t)
 #+END_SRC
 
+** UV
+
+Configure UV:
+
+#+begin_src emacs-lisp
+  (use-package uv-mode
+  	:hook (python-mode . uv-mode-auto-activate-hook)
+  	:init
+  	:ensure t)
+#+end_src
+
 * Rainbow Delimiters
 
   Let's add some color into our parenthesis and brackets:
@@ -1007,9 +957,8 @@ Add support for sparql:
 * TeX
 
 #+BEGIN_SRC emacs-lisp
-  (use-package latex
-    :bind (:map LaTeX-mode-map ("<tab>" . org-cycle))
-    :ensure auctex)
+  (use-package auctex
+    :ensure t)
 
   (use-package org-fragtog
     :hook (org-mode . org-fragtog-mode)
@@ -1254,9 +1203,9 @@ gem install taskjuggler
 Once task juggler is installed, we need to enable its org-mode exporter ([[https://github.com/emacsmirror/org-contrib/blob/master/lisp/ox-taskjuggler.el][source]]):
 
 #+begin_src emacs-lisp
-  (use-package ox-taskjuggler
-    :after ox
-    :load-path "~/.emacs.d/elisp/")
+  ;; (use-package ox-taskjuggler
+  ;;   :after ox
+  ;;   :load-path "~/.emacs.d/elisp/")
 #+end_src
 
 ** org-journal

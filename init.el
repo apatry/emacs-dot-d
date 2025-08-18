@@ -12,15 +12,38 @@
     (or (not time-file2) (time-less-p time-file2 time-file1))))
 
 
+;; Configure straight. This is needed to make sure `emacs.org` is
+;; tangled with the latest version of org that we install from
+;; straight.
+(defvar bootstrap-version)
+(let ((bootstrap-file
+			 (expand-file-name
+				"straight/repos/straight.el/bootstrap.el"
+				(or (bound-and-true-p straight-base-dir)
+						user-emacs-directory)))
+			(bootstrap-version 7))
+	(unless (file-exists-p bootstrap-file)
+		(with-current-buffer
+				(url-retrieve-synchronously
+				 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+				 'silent 'inhibit-cookies)
+			(goto-char (point-max))
+			(eval-print-last-sexp)))
+	(load bootstrap-file nil 'nomessage))
+
+(setq straight-use-package-by-default t)
+(straight-use-package 'use-package)
+
+;; Refresh config
 (let
     ((source "~/.emacs.d/emacs.org")
      (compiled "~/.emacs.d/emacs.el"))
   (if (my/is-newer source compiled)
       (progn
-	(message "Tangling %s to %s." source compiled)
-	;; make sure we use the latest version of org when tangling the config
-	(use-package org :ensure t)
-	(org-babel-load-file source))
+				(message "Tangling %s to %s." source compiled)
+				;; make sure we use the latest version of org when tangling the config
+				(use-package org :ensure t)
+				(org-babel-load-file source))
     (progn
       (message "Skip tangling of %s, reusing %s directly." source compiled)
       (load compiled))))
