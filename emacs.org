@@ -300,6 +300,29 @@ We will also add git modification into the [[https://github.com/syohex/emacs-git
     :ensure t)
 #+END_SRC
 
+* Claude Code
+
+#+begin_src emacs-lisp
+  (use-package eat
+  	:ensure t)
+
+  (straight-use-package
+   '(monet :type git :host github :repo "stevemolitor/monet"))
+
+  (use-package claude-code
+  	:ensure t
+  	:straight (:type git :host github :repo "stevemolitor/claude-code.el" :branch "main" :depth 1
+                     :files ("*.el" (:exclude "images/*")))
+  	:config
+  	;; IDE integration with Monet
+  	(add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
+  	(monet-mode 1)
+  	(claude-code-mode)
+
+  	:bind-keymap
+  	("C-c g" . claude-code-command-map))
+#+end_src
+
 * Github Copilot
 
 From [[https://github.com/copilot-emacs/copilot.el][this documentation]]:
@@ -789,7 +812,7 @@ project:
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
     :config
-      (setq projectile-project-search-path '("~/workspace"))
+      (setq projectile-project-search-path '("~/workspace" . 1))
     :init
       (projectile-mode +1)
     :bind-keymap
@@ -1031,12 +1054,12 @@ Nobody likes trailing whitespaces, let's just remove them:
     :mode ("\\.org\\'" . org-mode)
 
     :bind (("C-c l" . org-store-link)
-  	 ("C-c c" . org-capture)
-  	 ("C-c a" . org-agenda)
-  	 ("C-c b" . org-switchb)
-  	 ("C-c j" . org-journal-new-entry)
-  	 ("C-c C-w" . org-refile)
-  	 ("C-c C-x C-o" . org-clock-out))
+  				 ("C-c c" . org-capture)
+  				 ("C-c a" . org-agenda)
+  				 ("C-c b" . org-switchb)
+  				 ("C-c j" . org-journal-new-entry)
+  				 ("C-c C-w" . org-refile)
+  				 ("C-c C-x C-o" . org-clock-out))
 
     :hook
     ;; update inline image after code-blocks
@@ -1045,10 +1068,14 @@ Nobody likes trailing whitespaces, let's just remove them:
      (org-mode . visual-line-mode)
      (org-mode . org-indent-mode))
 
-    :config
+  	:config
+
+  	;; org-tempo allows <s to be expanded to a src block among other things
+  	(require 'org-tempo)
+
     (setq org-todo-keywords '((sequence
-  			     "TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
-  			     "|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
+  														 "TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
+  														 "|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
 
     ;; Capture timestamp when tasks are done
     (setq org-log-done t)
@@ -1067,26 +1094,26 @@ Nobody likes trailing whitespaces, let's just remove them:
 
     ;; configure org-capture
     (setq org-capture-templates
-  	'(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
-  	   "* TODO %?\n  %i")
-  	  ("j" "Journal entry." plain (function org-journal-find-location)
-  	   "** Mental Health\n*** I am grateful for\n*** What would make today great?\n*** Daily affirmation\n*** Three amazing things that happened yesterday\n*** How could I have made yesterday even better in less than 5 minutes"
-  	   :jump-to-captured t :immediate-finish t)))
+  				'(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
+  					 "* TODO %?\n  %i")
+  					("j" "Journal entry." plain (function org-journal-find-location)
+  					 "** Mental Health\n*** I am grateful for\n*** What would make today great?\n*** Daily affirmation\n*** Three amazing things that happened yesterday\n*** How could I have made yesterday even better in less than 5 minutes"
+  					 :jump-to-captured t :immediate-finish t)))
 
     ;; use python3 by default
     (setq org-babel-python-command "python3"
-  	org-babel-clojure-backend 'cider)
+  				org-babel-clojure-backend 'cider)
 
     (org-babel-do-load-languages 'org-babel-load-languages
-  			       '((clojure . t)
-  				 (dot . t)
-  				 (emacs-lisp . t)
-  				 (gnuplot . t)
-  				 (plantuml . t )
-  				 (python . t)
-  				 (shell . t)
-  				 (sparql . t)
-  				 (sqlite . t)))
+  															 '((clojure . t)
+  																 (dot . t)
+  																 (emacs-lisp . t)
+  																 (gnuplot . t)
+  																 (plantuml . t )
+  																 (python . t)
+  																 (shell . t)
+  																 (sparql . t)
+  																 (sqlite . t)))
 
     (custom-set-faces
      '(org-block ((t (:inherit fixed-pitch))))
@@ -1095,6 +1122,7 @@ Nobody likes trailing whitespaces, let's just remove them:
      '(org-verbatim ((t (:inherit fixed-pitch))))
      '(org-meta-line ((t (:inherit fixed-pitch))))
      '(org-document-info-keyword ((t (:inherit fixed-pitch))))))
+
 #+END_SRC
 
 ** epresent
@@ -1336,6 +1364,27 @@ First, let's start by configuring the appearance of top level items:
 
 Make sure to run =M-x all-the-icons-install-fonts= at least once on
 your system if the icons do not render well.
+
+* WSL Integration
+
+Emacs in terminal doesn't copy and paste in Windows clipboard by default. We can enable this integration with clipetty:
+
+#+begin_src emacs-lisp
+  (defun my/wsl-p ()
+    "Return non-nil if running inside WSL."
+    (or (getenv "WSL_DISTRO_NAME")
+        (file-exists-p "/proc/sys/fs/binfmt_misc/WSLInterop")))
+
+  (use-package clipetty
+    :ensure t
+    :if (and (not (display-graphic-p))  ;; only in terminal Emacs
+             (my/wsl-p))                ;; only if inside WSL
+    :hook (after-init . global-clipetty-mode)
+    :config
+    (setq select-enable-clipboard t
+          save-interprogram-paste-before-kill t
+          set-selection-coding-system 'utf-8))
+#+end_src
 
 * Epilogue
 
