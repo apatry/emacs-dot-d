@@ -2,4 +2,4 @@
 ;; to avoid conflict between package.el and straight.el.
 
 (setq package-enable-at-startup nil)
-(provide 'early-init)
+(setq straight-use-package-by-default t)

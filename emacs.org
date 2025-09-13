@@ -17,51 +17,6 @@ started is probably to clone this repository and move it at
 =~/.emacs.d=. Make sure that no file is named =~/.emacs= as it would
 be used instead of =~/.emacs.d/init.el= when emacs is starting.
 
-* Prologue
-
-Before we start actually configuring our environment, let's define
-some utilities that will help us get organized:
-
-#+BEGIN_SRC emacs-lisp
-  (package-initialize)
-  (require 'package)
-
-  (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
-		      (not (gnutls-available-p))))
-	 (proto (if no-ssl "http" "https")))
-    (when no-ssl
-      (warn "\
-  Your version of Emacs does not support SSL connections,
-  which is unsafe because it allows man-in-the-middle attacks.
-  There are two things you can do about this warning:
-  1. Install an Emacs version that does support SSL and be safe.
-  2. Remove this warning from your init file so you won't see it again."))
-
-    ;; Add all the package repositories that we want to use.
-    (add-to-list 'package-archives
-		 (cons "melpa" (concat proto "://melpa.org/packages/")) t))
-
-  ;; Initialize the package module, this must be after 'package-archives
-  ;; has been set
-  (when (< emacs-major-version 27) (package-initialize))
-
-  ;; Reloading the list of packages takes time, we will do it at most
-  ;; once. This variable will be true if the list has already be
-  ;; reloaded.
-  (setq my/package-refreshed nil)
-
-  ;; Install a package if it is not already installed.
-  (defun my/install (package)
-    (unless (package-installed-p package)
-      (unless my/package-refreshed
-	(package-refresh-contents)
-	(setq my/package-refreshed t))
-      (package-install package)))
-#+END_SRC
-
-#+RESULTS:
-: my/install
-
 * Startup time profiling
 
 Over time, my startup configuration gets slower, it is useful to profile the bottlenecks when it happens. The package [[https://github.com/jschaf/esup][esup]] can help with the =esup= command.
@@ -314,6 +269,9 @@ We will also add git modification into the [[https://github.com/syohex/emacs-git
   	:straight (:type git :host github :repo "stevemolitor/claude-code.el" :branch "main" :depth 1
                      :files ("*.el" (:exclude "images/*")))
   	:config
+  	;; use vterm for claude
+  	(setq claude-code-terminal-backend 'vterm)
+
   	;; IDE integration with Monet
   	(add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
   	(monet-mode 1)
@@ -335,20 +293,21 @@ From [[https://github.com/copilot-emacs/copilot.el][this documentation]]:
   (use-package s :ensure t)
 
   (use-package copilot
-    :after (dash editorconfig f s)
-    :bind (("C-c s a" . copilot-accept-completion)
-	   ("C-c s s" . copilot-complete)
-	   ("C-c s n" . copilot-next-completion)
-	   ("C-c s p" . copilot-previous-completion)
-	   ("C-c s g" . copilot-clear-overlay)
-	   ("C-c s w" . copilot-accept-completion-by-word)
-	   ("C-c s p" . copilot-accept-completion-by-paragraph)
-	   ("C-c s l" . copilot-accept-completion-by-line)
-	   ("C-c s m" . copilot-mode))
+  	:disabled t														; I don't use copilot anymore but might want again at some point
+  	:after (dash  editorconfig f s)
+  	:bind (("C-c s a" . copilot-accept-completion)
+  				 ("C-c s s" . copilot-complete)
+  				 ("C-c s n" . copilot-next-completion)
+  				 ("C-c s p" . copilot-previous-completion)
+  				 ("C-c s g" . copilot-clear-overlay)
+  				 ("C-c s w" . copilot-accept-completion-by-word)
+  				 ("C-c s p" . copilot-accept-completion-by-paragraph)
+  				 ("C-c s l" . copilot-accept-completion-by-line)
+  				 ("C-c s m" . copilot-mode))
 
-    :hook (prog-mode . copilot-mode)
-    :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
-    :ensure t)
+  	:hook (prog-mode . copilot-mode)
+  	:straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
+  	:ensure t)
 #+end_src
 
 And enable the use of copilot to chat with the code base:
@@ -486,16 +445,20 @@ To update to the latest of some of these:
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-mode
     :hook ((clojure-mode . lsp)
-	   (javascript-mode . lsp)
-	   (rustic-mode . lsp)
-	   (scala-mode . lsp)
-	   (sql-mode . lsp)
-	   (typescript-mode . lsp)
-	   (lsp-mode . lsp-enable-which-key-integration))
+  				 (javascript-mode . lsp)
+  				 (rustic-mode . lsp)
+  				 (scala-mode . lsp)
+  				 (sql-mode . lsp)
+  				 (typescript-mode . lsp)
+  				 (lsp-mode . lsp-enable-which-key-integration))
     :commands lsp
     :config
     (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]build\\'")
-    :ensure t)
+
+  	;; Don't watch file for changes, WSL choke when there are too many files to watch.
+  	(setq lsp-enable-file-watchers nil)
+
+  	:ensure t)
 
   (define-minor-mode lsp-format-on-save-mode
     "Toggle calling lsp-format-buffer on file save."
@@ -505,7 +468,7 @@ To update to the latest of some of these:
     ;; this code is called when the mode is enabled
     ;; (lsp-format-on-save-mode will be defined) or disabled.
     (if lsp-format-on-save-mode
-	(add-hook 'before-save-hook #'lsp-format-buffer)
+  (add-hook 'before-save-hook #'lsp-format-buffer)
       (remove-hook 'before-save-hook #'lsp-format-buffer)))
 
   (use-package lsp-java
@@ -524,8 +487,8 @@ To update to the latest of some of these:
     :ensure t
     :mode "\\.py"
     :hook (python-mode . (lambda ()
-			   (require 'lsp-pyright)
-			   (lsp))))
+  		   (require 'lsp-pyright)
+  		   (lsp))))
 
   (use-package lsp-ui
     :commands lsp-ui-mode
@@ -1364,6 +1327,15 @@ First, let's start by configuring the appearance of top level items:
 
 Make sure to run =M-x all-the-icons-install-fonts= at least once on
 your system if the icons do not render well.
+
+* VTerm
+
+Install vterm:
+#+begin_src emacs-lisp
+  (use-package vterm
+  	:straight t
+  	:commands vterm)
+#+end_src
 
 * WSL Integration
 
