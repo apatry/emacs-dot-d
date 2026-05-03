@@ -101,6 +101,15 @@ Let's set sane default values for indent. This helps make copilot happy:
     (find-file "~/.emacs.d/emacs.org"))
 #+END_SRC
 
+
+* Fonts
+
+We use nerd-fonts which support all of emacs icons:
+
+#+begin_src emacs-lisp
+  (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font-12")
+#+end_src
+
 * Flycheck
 
 Flycheck checks the syntax in many programming language and add visual
@@ -336,6 +345,49 @@ Add a mode for gnuplot. Useful with org-babel:
   (use-package gnuplot
     :ensure t)
 #+end_src
+
+* GPTel
+
+From [[https://github.com/karthink/gptel][gptel]]:
+
+#+begin_src emacs-lisp
+  ;; gptel require a recent version of curl
+
+  (use-package gptel
+    :ensure t
+    :config
+    ;; use a more recent version of curl (required for bedrock)
+    (setq gptel-use-curl "/opt/homebrew/opt/curl/bin/curl")
+    :custom
+    (gptel-default-mode 'org-mode)
+    :bind
+    ;; Open new gptel buffer.
+    ("C-c g" . gptel)
+    ;; Enable the mode in exisiting buffer.
+    ("C-c G" . gptel-mode))
+
+  (use-package gptel-bedrock
+    :after gptel
+    :config
+    ;; Redefine get-credentials to automatically pull them in from toolbox.
+    (defun gptel-bedrock--get-credentials ()
+      (let* ((json-output (shell-command-to-string
+                           "~/.toolbox/bin/ada credentials print --account=809754797121 --provider=conduit --role=IibsAdminAccess-DO-NOT-DELETE"))
+             (json-object-type 'alist)
+             (json-data (json-read-from-string json-output)))
+        (cl-values
+         (alist-get 'AccessKeyId json-data)
+         (alist-get 'SecretAccessKey json-data)
+         (alist-get 'SessionToken json-data))))
+
+    (setq gptel-backend (gptel-make-bedrock "bedrock"
+                          :stream t
+                          :region "us-west-2"
+                          :models '(claude-sonnet-4-20250514)
+                          :model-region 'us)
+          gptel-model 'claude-sonnet-4-20250514))
+#+end_src
+
 * Graphviz
 
 #+BEGIN_SRC emacs-lisp
@@ -356,56 +408,53 @@ Add support for groovy files:
     :ensure t)
 #+END_SRC
 
-* Ivy
+* Vertico
 
-Ivy is an auto-completion framework for emacs. I am trying it out as a
-replacement for helm. Let's see how it goes:
+Vertico is a minimalist auto-completion framework for emacs.
 
 #+begin_src emacs-lisp
-  (use-package ivy
+  (use-package vertico
+    :ensure t
     :config
-      (setq ivy-use-virtual-buffers t)
-      (ivy-mode +1)
+    (vertico-mode 1))
+
+  (use-package orderless
+    :ensure t
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-overrides '((file (styles basic partial-completion)))))
+
+  ;; help with ranking completions using mru
+  (use-package prescient
     :ensure t)
+
+  (use-package vertico-prescient
+    :after vertico
+    :ensure t
+    :config
+    (vertico-prescient-mode 1)
+    (prescient-persist-mode 1))
 #+end_src
 
-** Hydra
 
-#+begin_src emacs-lisp
-  (use-package hydra
-    :ensure t)
 
-  (use-package ivy-hydra
-    :after (ivy hydra)
-    :ensure t)
-#+end_src
-
-#+RESULTS:
+* Ivy
 
 ** Counsel
 
 Counsel is the UI for ivy:
 
 #+begin_src emacs-lisp
-  (use-package counsel
-    :after ivy
-    :defer t
-    :config
-      (counsel-mode +1)
-    :ensure t)
+  (use-package consult
+    :ensure t
+    :bind
+    ("C-x b"   . consult-buffer)
+    ("C-x C-r" . consult-recent-file)
+    ("M-y"     . consult-yank-pop)
+    ("M-g g"   . consult-goto-line)
+    ("C-s"     . consult-line))
 #+end_src
 
-** ivy-explorer
-
-Display ivy completions in a grid instead of a list.
-
-#+begin_src emacs-lisp
-  (use-package ivy-explorer
-    :after counsel
-    :config
-      (ivy-explorer-mode 1)
-    :ensure t)
-#+end_src
 
 * Julia
 
@@ -445,12 +494,12 @@ To update to the latest of some of these:
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-mode
     :hook ((clojure-mode . lsp)
-  				 (javascript-mode . lsp)
-  				 (rustic-mode . lsp)
-  				 (scala-mode . lsp)
-  				 (sql-mode . lsp)
-  				 (typescript-mode . lsp)
-  				 (lsp-mode . lsp-enable-which-key-integration))
+           (javascript-mode . lsp)
+           (rustic-mode . lsp)
+           (scala-mode . lsp)
+           (sql-mode . lsp)
+           (typescript-mode . lsp)
+           (lsp-mode . lsp-enable-which-key-integration))
     :commands lsp
     :config
     (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]build\\'")
@@ -468,7 +517,7 @@ To update to the latest of some of these:
     ;; this code is called when the mode is enabled
     ;; (lsp-format-on-save-mode will be defined) or disabled.
     (if lsp-format-on-save-mode
-  (add-hook 'before-save-hook #'lsp-format-buffer)
+        (add-hook 'before-save-hook #'lsp-format-buffer)
       (remove-hook 'before-save-hook #'lsp-format-buffer)))
 
   (use-package lsp-java
@@ -486,9 +535,10 @@ To update to the latest of some of these:
   (use-package lsp-pyright
     :ensure t
     :mode "\\.py"
+    :config (setq lsp-pyright-multi-root nil)
     :hook (python-mode . (lambda ()
-  		   (require 'lsp-pyright)
-  		   (lsp))))
+                           (require 'lsp-pyright)
+                           (lsp))))
 
   (use-package lsp-ui
     :commands lsp-ui-mode
@@ -695,9 +745,10 @@ Let's use [[https://github.com/seagle0128/doom-modeline][doom-modeline]]:
 #+BEGIN_SRC emacs-lisp
   ;; run the following only once to install the fonts required by
   ;; doom-modeline. I didn't find an easy way to run this only once ...
-  ; (my/install 'all-the-icons)
-  ; (require 'all-the-icons)
-  ; (all-the-icons-install-fonts)
+
+  (use-package all-the-icons
+    :ensure t)
+  ;; (all-the-icons-install-fonts)
 
   (use-package doom-modeline
     :defer 1
@@ -712,6 +763,19 @@ Let's use [[https://github.com/seagle0128/doom-modeline][doom-modeline]]:
 #+begin_src emacs-lisp
   (use-package org-ql
     :ensure t)
+#+end_src
+
+* Pandoc
+
+#+begin_src emacs-lisp
+  (use-package pandoc-mode
+    :ensure t
+    :hook ((markdown-mode . pandoc-mode)
+           (org-mode . pandoc-mode))
+    :bind (:map pandoc-mode-map
+                ("C-c P r" . pandoc-run-pandoc))
+    :config
+    (setq pandoc-data-dir "~/.emacs.d/pandoc/"))
 #+end_src
 
 * Pdf-tools
@@ -785,10 +849,10 @@ project:
       ("C-c p" . projectile-command-map)
     :ensure t)
 
-  (use-package counsel-projectile
-    :after (counsel projectile)
-    :config
-      (counsel-projectile-mode t)
+  (use-package consult-projectile
+    :after (consult projectile)
+    :bind
+    ("C-c p p" . consult-projectile)
     :ensure t)
 #+END_SRC
 
@@ -946,8 +1010,8 @@ Add support for sparql:
 * TeX
 
 #+BEGIN_SRC emacs-lisp
-  (use-package auctex
-    :ensure t)
+  (use-package latex
+    :ensure auctex)
 
   (use-package org-fragtog
     :hook (org-mode . org-fragtog-mode)
@@ -1019,12 +1083,12 @@ Nobody likes trailing whitespaces, let's just remove them:
     :mode ("\\.org\\'" . org-mode)
 
     :bind (("C-c l" . org-store-link)
-  				 ("C-c c" . org-capture)
-  				 ("C-c a" . org-agenda)
-  				 ("C-c b" . org-switchb)
-  				 ("C-c j" . org-journal-new-entry)
-  				 ("C-c C-w" . org-refile)
-  				 ("C-c C-x C-o" . org-clock-out))
+           ("C-c c" . org-capture)
+           ("C-c a" . org-agenda)
+           ("C-c b" . org-switchb)
+           ("C-c j" . org-journal-new-entry)
+           ("C-c C-w" . org-refile)
+           ("C-c C-x C-o" . org-clock-out))
 
     :hook
     ;; update inline image after code-blocks
@@ -1038,9 +1102,12 @@ Nobody likes trailing whitespaces, let's just remove them:
   	;; org-tempo allows <s to be expanded to a src block among other things
   	(require 'org-tempo)
 
+    :config
+
+    (require 'org-tempo)                  ; enable structure template
     (setq org-todo-keywords '((sequence
-  														 "TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
-  														 "|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
+                               "TODO(t!)" "IN-PROGRESS(p!)" "BLOCKED(b@!)"
+                               "|" "DONE(d!)" "DELEGATED(g@!)" "CANCELLED(c@!)")))
 
     ;; Capture timestamp when tasks are done
     (setq org-log-done t)
@@ -1059,35 +1126,29 @@ Nobody likes trailing whitespaces, let's just remove them:
 
     ;; configure org-capture
     (setq org-capture-templates
-  				'(("b" "Backlog an action item." entry (file+headline "~/Documents/today.org" "Backlog")
-  					 "* TODO %?\n  %i")
-  					("j" "Journal entry." plain (function org-journal-find-location)
-  					 "** Mental Health\n*** I am grateful for\n*** What would make today great?\n*** Daily affirmation\n*** Three amazing things that happened yesterday\n*** How could I have made yesterday even better in less than 5 minutes"
-  					 :jump-to-captured t :immediate-finish t)))
+          '(("b" "Backlog an action item." entry (file+headline "~/org/today.org" "Backlog")
+             "* TODO %?\n  :PROPERTIES:\n  :CREATED: %U\n  :END:\n  %i")))
+
+    ;; configure refiling to work with org-journal
+    (setq org-refile-targets
+          '((nil :maxlevel . 1)           ; current file
+            (org-agenda-files :maxlevel . 1) ; Agenda files, including journal
+            ))
 
     ;; use python3 by default
     (setq org-babel-python-command "python3"
-  				org-babel-clojure-backend 'cider)
+          org-babel-clojure-backend 'cider)
 
     (org-babel-do-load-languages 'org-babel-load-languages
-  															 '((clojure . t)
-  																 (dot . t)
-  																 (emacs-lisp . t)
-  																 (gnuplot . t)
-  																 (plantuml . t )
-  																 (python . t)
-  																 (shell . t)
-  																 (sparql . t)
-  																 (sqlite . t)))
-
-    (custom-set-faces
-     '(org-block ((t (:inherit fixed-pitch))))
-     '(org-table ((t (:inherit fixed-pitch))))
-     '(org-code ((t (:inherit fixed-pitch))))
-     '(org-verbatim ((t (:inherit fixed-pitch))))
-     '(org-meta-line ((t (:inherit fixed-pitch))))
-     '(org-document-info-keyword ((t (:inherit fixed-pitch))))))
-
+                                 '((clojure . t)
+                                   (dot . t)
+                                   (emacs-lisp . t)
+                                   (gnuplot . t)
+                                   (plantuml . t )
+                                   (python . t)
+                                   (shell . t)
+                                   (sparql . t)
+                                   (sqlite . t))))
 #+END_SRC
 
 ** epresent
@@ -1209,15 +1270,17 @@ Add support for [[https://github.com/bastibe/org-journal][org-journal]] when the
 
 #+begin_src emacs-lisp
   (use-package org-journal
-   :if (file-directory-p "~/journal")
-   :defer t
-   :config
-     (setq org-journal-dir "~/journal")
-     (setq org-journal-file-type 'daily)
-     (setq org-journal-date-format "%A, %d %B %Y")
-   :init
-     (setq org-journal-prefix-key "C-c j")
-   :ensure t)
+    :if (file-directory-p "~/journal")
+    :defer t
+    :config
+    (setq org-journal-dir "~/journal")
+    (setq org-journal-file-type 'daily)
+    (setq org-journal-date-format "%A, %d %B %Y")
+    (setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"IN-PROGRESS\"")
+    (setq org-journal-enable-agenda-integration t)
+    :init
+    (setq org-journal-prefix-key "C-c j")
+    :ensure t)
 
   (defun org-journal-find-location ()
     ;; Open today's journal, but specify a non-nil prefix argument in order to
@@ -1249,30 +1312,61 @@ Commands of org-journal are available under the prefix ~C-c j~. If it becomes cu
 [[https://www.orgroam.com][org-roam]] is a knowledge management system built on top of org-mode:
 
 #+BEGIN_SRC emacs-lisp :results silent
+
   (use-package org-roam
     :preface
-      (setq org-roam-directory "~/org-roam")
-      (setq org-roam-v2-ack t)
+    (setq org-roam-directory "~/org-roam")
+    (setq org-roam-v2-ack t)
 
-    :bind (("C-c n l" . org-roam-buffer-toggle)
-	   ("C-c n i" . org-roam-node-insert)
-	   ("C-c n f" . org-roam-node-find))
+    :custom
+    (org-roam-database-connector 'sqlite-builtin)
+
+    ;; We use consult-org-roam instead
+    :bind (("C-c n i" . org-roam-node-insert)
+           ("C-c n f" . org-roam-node-find))
 
     :if (file-directory-p org-roam-directory)
     :config
-      (org-roam-db-autosync-mode)
+    (org-roam-db-autosync-mode)
 
-      ;; setup org-roam-protocol
-      (when window-system
-	(server-start)
-	(require 'org-roam-protocol))
+    ;; setup org-roam-protocol
+    (when window-system
+      (server-start)
+      (require 'org-roam-protocol))
 
     ;; We force org-roam to load in order to make sure the browser
     ;; integration work as soon a GUI emacs is started.
+    (defun my/org-roam-rename-file ()
+      "Rename the current org-roam file and update the database."
+      (interactive)
+      (let ((old-name (buffer-file-name)))
+        (call-interactively #'write-file) ; prompts for new filename
+        (when old-name
+          (delete-file old-name))
+        (org-roam-db-sync)))
+
     :defer 2
 
     :ensure t)
 #+END_SRC
+
+consult-org-roam integration:
+
+#+begin_src emacs-lisp :results silent
+  (use-package consult-org-roam
+    :ensure t
+    :after org-roam
+    :custom
+    (consult-org-roam-grep-func #'consult-ripgrep) ; use ripgrep
+    (consult-org-roam-buffer-narrow-key ?r) ; narrow to roam in consult-buffer
+    :config
+    (consult-org-roam-mode 1)
+    :bind
+    ; ("C-c n f" . consult-org-roam-node-find)
+    ("C-c n b" . consult-org-roam-backlinks)
+    ("C-c n l" . consult-org-roam-forward-links)
+    ("C-c n s" . consult-org-roam-search))
+#+end_src
 
 *** Taking notes from the browser
 
@@ -1331,6 +1425,21 @@ First, let's start by configuring the appearance of top level items:
 
 Make sure to run =M-x all-the-icons-install-fonts= at least once on
 your system if the icons do not render well.
+
+** Scrolling
+
+Enable smooth-scrolling:
+
+#+begin_src emacs-lisp
+  ;; (package-vc-install '(ultra-scroll :vc-backend Git :url  "https://github.com/jdtsmith/ultra-scroll"))
+
+  (use-package ultra-scroll
+    :init
+    (setq scroll-conservatively 101 ; important!
+          scroll-margin 0)
+    :config
+    (ultra-scroll-mode 1))
+#+end_src
 
 * VTerm
 
