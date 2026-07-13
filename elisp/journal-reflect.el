@@ -255,4 +255,19 @@ by `journal-reflect--send-prompt'."
   (message "journal-reflect: reflection updated"))
 
 (provide 'journal-reflect)
+
+;; Local Variables:
+;; eval: (add-hook 'after-save-hook
+;;                  (lambda ()
+;;                    (let* ((dir (file-name-directory (buffer-file-name)))
+;;                           (base (file-name-base (buffer-file-name)))
+;;                           (test-file (expand-file-name (concat base "-test.el") dir)))
+;;                      (when (file-exists-p test-file)
+;;                        (compilation-start
+;;                         (format "emacs -Q --batch -L %s -l %s -l %s-test -f ert-run-tests-batch-and-exit"
+;;                                 (shell-quote-argument dir) base base)
+;;                         nil
+;;                         (lambda (_mode) (format "*%s-tests*" base))))))
+;;                  nil t)
+;; End:
 ;;; journal-reflect.el ends here

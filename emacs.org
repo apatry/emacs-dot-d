@@ -1316,31 +1316,15 @@ Manually (re)generate a reflection for the current entry with
 =M-x journal-reflect-now=.
 
 Development convenience: whenever =journal-reflect.el= itself is saved,
-run its ERT suite in the background and report results in a
-=*journal-reflect-tests*= compilation buffer. This only hooks that one
-file (via =emacs-lisp-mode-hook= checking the filename), not every
-Elisp file, and doesn't require =~/journal= to exist.
-
-#+begin_src emacs-lisp
-  (defun journal-reflect--test-command ()
-    (let ((dir (expand-file-name "~/.emacs.d/elisp/")))
-      (format "emacs -Q --batch -L %s -l journal-reflect -l journal-reflect-test -f ert-run-tests-batch-and-exit"
-              (shell-quote-argument dir))))
-
-  (defun journal-reflect-run-tests ()
-    "Run the journal-reflect ERT suite in a compilation buffer."
-    (interactive)
-    (let ((default-directory (expand-file-name "~/.emacs.d/elisp/")))
-      (compilation-start (journal-reflect--test-command)
-                          nil
-                          (lambda (_mode) "*journal-reflect-tests*"))))
-
-  (defun journal-reflect--hook-tests-on-save ()
-    (when (equal (file-name-nondirectory (or buffer-file-name "")) "journal-reflect.el")
-      (add-hook 'after-save-hook #'journal-reflect-run-tests nil t)))
-
-  (add-hook 'emacs-lisp-mode-hook #'journal-reflect--hook-tests-on-save)
-#+end_src
+its ERT suite runs in the background and reports results in a
+=*journal-reflect-tests*= compilation buffer. This is wired up via a
+file-local ~eval~ variable at the bottom of =journal-reflect.el= itself
+(not here), so it only activates when that file is actually open for
+editing, travels with the file, and needs no config changes to reuse
+for future =<pkg>.el= / =<pkg>-test.el= packages dropped into
+=~/.emacs.d/elisp/=. The first time you save the file, Emacs will ask
+whether to trust that local ~eval~ form -- answer ~!~ to allow it
+permanently.
 
 ** org-noter
 
