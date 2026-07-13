@@ -1330,10 +1330,15 @@ authenticated.
     ;; On native Windows Emacs, `claude' typically isn't a Windows binary
     ;; at all -- it's installed inside WSL, so it can't be found via
     ;; `exec-path'. Route the call through wsl.exe instead, which forwards
-    ;; stdin/stdout to the WSL-side `claude' just fine.
+    ;; stdin/stdout to the WSL-side `claude' just fine. Using the absolute
+    ;; path (rather than the bare command name) sidesteps `wsl.exe' running
+    ;; it outside of any shell that would otherwise source whatever rc file
+    ;; sets up PATH for it (e.g. `claude' not found if that only happens in
+    ;; `.zshrc', which non-interactive invocations skip).
     (when (eq system-type 'windows-nt)
       (setq journal-reflect-claude-executable "wsl")
-      (setq journal-reflect-claude-args (cons "claude" journal-reflect-claude-args))))
+      (setq journal-reflect-claude-args
+            (cons "/home/linuxbrew/.linuxbrew/bin/claude" journal-reflect-claude-args))))
 #+end_src
 
 Manually (re)generate a reflection for the current entry with
