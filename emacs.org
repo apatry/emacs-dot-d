@@ -107,7 +107,8 @@ Let's set sane default values for indent. This helps make copilot happy:
 We use nerd-fonts which support all of emacs icons:
 
 #+begin_src emacs-lisp
-  (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font-12")
+  (when (member "JetBrainsMono Nerd Font" (font-family-list))
+    (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font-12"))
 #+end_src
 
 * Flycheck
@@ -367,6 +368,7 @@ From [[https://github.com/karthink/gptel][gptel]]:
     ("C-c G" . gptel-mode))
 
   (use-package gptel-bedrock
+    :straight nil
     :after gptel
     :config
     ;; Redefine get-credentials to automatically pull them in from toolbox.
@@ -1011,7 +1013,7 @@ Add support for sparql:
 
 #+BEGIN_SRC emacs-lisp
   (use-package latex
-    :ensure auctex)
+    :straight auctex)
 
   (use-package org-fragtog
     :hook (org-mode . org-fragtog-mode)
@@ -1306,6 +1308,7 @@ authenticated.
 
 #+begin_src emacs-lisp
   (use-package journal-reflect
+    :straight nil
     :if (file-directory-p "~/journal")
     :after org-journal
     :load-path "~/.emacs.d/elisp/"
