@@ -39,12 +39,18 @@
 ;;    point instead of the whole buffer -- flag if you want that added.
 ;;  - `journal-reflect-context-days' > 0 pulls in prior org-journal files
 ;;    as extra context for pattern-spotting, only when org-journal is
-;;    loaded and `org-journal-dir' is set.
+;;    loaded and `org-journal-dir' is set. Each prior day is labeled with
+;;    its date and has its own Reflection subtree stripped (so past AI
+;;    output doesn't get fed back in as if it were the user's writing),
+;;    and today's entry is clearly marked as the one to actually reflect
+;;    on -- so the model isn't left guessing which part of the text is
+;;    background vs. what it's responding to.
 
 ;;; Code:
 
 (require 'org)
 (require 'subr-x)
+(require 'cl-lib)
 
 (defgroup journal-reflect nil
   "AI-assisted reflection for org journal entries."
@@ -90,13 +96,17 @@ is loaded, since it's used to locate previous entry files."
 
 (defcustom journal-reflect-prompt-template
   "You are a thoughtful, low-key journaling companion. Below is a journal \
-entry written in org-mode. Respond with 2-4 short paragraphs of genuine \
-reflection: notice patterns, gently ask one or two questions worth sitting \
-with, and avoid generic affirmations or therapy-speak. Do not repeat the \
-entry back to me. Plain prose only, no headings or bullet points.\n\n\
-Journal entry:\n\n%s"
+entry written in org-mode, possibly preceded by labeled context from \
+earlier entries. If a \"Today's entry\" section is marked, reflect only \
+on that section -- the rest is background for spotting patterns, not \
+something to comment on directly. Respond with 2-4 short paragraphs of \
+genuine reflection: notice patterns, gently ask one or two questions \
+worth sitting with, and avoid generic affirmations or therapy-speak. Do \
+not repeat the entry back to me. Plain prose only, no headings or \
+bullet points.\n\nJournal entry:\n\n%s"
   "Template used to build the prompt sent to Claude.
-`%s' is replaced with the entry text (plus context, if any)."
+`%s' is replaced with the entry text (plus labeled context, if any --
+see `journal-reflect--entry-text')."
   :type 'string
   :group 'journal-reflect)
 
@@ -116,7 +126,10 @@ so `after-save-hook' doesn't re-trigger a reflection on our own edit.")
     (remove-hook 'after-save-hook #'journal-reflect--after-save t)))
 
 (defun journal-reflect--after-save ()
-  "Trigger a reflection after save, unless we caused this save ourselves."
+  "Trigger a reflection after save, unless we caused this save ourselves.
+`save-buffer' is a no-op on an unmodified buffer, so a reflexive re-save
+right after saving never re-fires `after-save-hook' in the first place --
+no debouncing needed here."
   (unless journal-reflect--suppress-hook
     (journal-reflect--run)))
 
@@ -128,56 +141,98 @@ so `after-save-hook' doesn't re-trigger a reflection on our own edit.")
 
 (defun journal-reflect--entry-text ()
   "Text to reflect on: buffer minus any existing Reflection subtree,
-plus optional prior-day context."
+plus optional labeled prior-day context. When context is included,
+today's entry is wrapped in its own clearly marked section so the
+model can tell it apart from the background context."
   (let ((body (journal-reflect--buffer-without-reflection)))
     (if (> journal-reflect-context-days 0)
         (let ((context (journal-reflect--previous-context)))
           (if (string-empty-p context)
               body
-            (concat context "\n\n---\n\n" body)))
+            (concat context "\n\n"
+                    (format "=== Today's entry (%s) -- reflect on this one ===\n\n"
+                            (journal-reflect--today-label))
+                    body)))
       body)))
+
+(defun journal-reflect--today-label ()
+  "Short label for today's entry, from the visited file name if any."
+  (if (buffer-file-name)
+      (file-name-base (buffer-file-name))
+    "today"))
+
+(defun journal-reflect--strip-reflection-subtree ()
+  "Delete the Reflection subtree (if any) from the current buffer, in place."
+  (goto-char (point-min))
+  (let ((heading-re (format "^\\*+ %s\\b.*$" (regexp-quote journal-reflect-heading))))
+    (when (re-search-forward heading-re nil t)
+      (goto-char (match-beginning 0))
+      (let ((start (point)))
+        (org-end-of-subtree t t)
+        (delete-region start (point))))))
 
 (defun journal-reflect--buffer-without-reflection ()
   "Buffer contents with the existing Reflection subtree stripped out."
   (save-excursion
     (save-restriction
       (widen)
-      (let ((full (buffer-substring-no-properties (point-min) (point-max)))
-            (heading-re (format "^\\*+ %s\\b.*$" (regexp-quote journal-reflect-heading))))
+      (let ((full (buffer-substring-no-properties (point-min) (point-max))))
         (with-temp-buffer
           (org-mode)
           (insert full)
-          (goto-char (point-min))
-          (when (re-search-forward heading-re nil t)
-            (goto-char (match-beginning 0))
-            (let ((start (point)))
-              (org-end-of-subtree t t)
-              (delete-region start (point))))
+          (journal-reflect--strip-reflection-subtree)
           (string-trim (buffer-string)))))))
 
+(defun journal-reflect--file-without-reflection (file)
+  "Contents of FILE with its own Reflection subtree stripped."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (org-mode)
+    (journal-reflect--strip-reflection-subtree)
+    (string-trim (buffer-string))))
+
 (defun journal-reflect--previous-context ()
-  "Best-effort text of the previous `journal-reflect-context-days' entries.
-Empty string if org-journal isn't available or nothing is found."
+  "Best-effort, labeled text of the previous `journal-reflect-context-days'
+entries, marked clearly as background context (not today's entry) with
+each day's own Reflection subtree stripped out. Empty string if
+org-journal isn't available or nothing is found."
   (if (not (featurep 'org-journal))
       ""
     (condition-case nil
-        (let ((files (journal-reflect--recent-journal-files journal-reflect-context-days)))
-          (string-join
-           (mapcar (lambda (f)
-                     (with-temp-buffer
-                       (insert-file-contents f)
-                       (buffer-string)))
-                   files)
-           "\n\n---\n\n"))
+        (let ((entries (journal-reflect--recent-journal-entries journal-reflect-context-days)))
+          (if (null entries)
+              ""
+            (concat
+             "=== Context from previous entries (for spotting patterns only -- do not reflect on these directly) ===\n\n"
+             (string-join
+              (mapcar (lambda (e)
+                        (format "--- %s ---\n%s"
+                                (format-time-string "%Y-%m-%d" (org-journal--calendar-date->time (car e)))
+                                (journal-reflect--file-without-reflection (cdr e))))
+                      entries)
+              "\n\n"))))
       (error ""))))
 
-(defun journal-reflect--recent-journal-files (n)
-  "Up to N most recent org-journal files, excluding the current one."
+(defun journal-reflect--recent-journal-entries (n)
+  "Up to N (DATE . FILE) conses for the most recent org-journal entries
+before the current one, newest first. DATE is a calendar date
+(MONTH DAY YEAR). Delegates to org-journal's own date index
+(`org-journal--list-dates') rather than re-deriving file order by
+treating filenames as sortable strings, so this follows whatever
+`org-journal-file-type' and `org-journal-file-format' are actually
+configured (including non-daily file types and encrypted journals)."
   (when (bound-and-true-p org-journal-dir)
-    (let* ((current (buffer-file-name))
-           (files (sort (directory-files org-journal-dir t "\\.org\\'")
-                        #'string>)))
-      (seq-take (seq-remove (lambda (f) (equal f current)) files) n))))
+    (let* ((dates (reverse (org-journal--list-dates))) ; newest first
+           (current (ignore-errors
+                      (and (buffer-file-name)
+                           (org-journal--file-name->calendar-date (buffer-file-name)))))
+           (prior (if current
+                      (seq-drop-while
+                       (lambda (d) (not (org-journal--calendar-date-compare d current)))
+                       dates)
+                    dates)))
+      (mapcar (lambda (d) (cons d (org-journal--get-entry-path (org-journal--calendar-date->time d))))
+              (seq-take prior n)))))
 
 (defun journal-reflect--run ()
   "Kick off an asynchronous Claude call for the current buffer's entry."
@@ -190,30 +245,40 @@ Empty string if org-journal isn't available or nothing is found."
     (let* ((buf (current-buffer))
            (prompt (format journal-reflect-prompt-template (journal-reflect--entry-text)))
            (out-buf (generate-new-buffer " *journal-reflect-output*")))
-      (setq journal-reflect--in-progress t)
-      (message "journal-reflect: asking Claude...")
-      (let ((proc
-             (make-process
-              :name "journal-reflect"
-              :buffer out-buf
-              :command (journal-reflect--build-command)
-              ;; Explicit pipe: with the default pty connection, `claude -p'
-              ;; doesn't recognize stdin as piped input and errors out.
-              :connection-type 'pipe
-              :noquery t
-              :sentinel
-              (lambda (proc _event)
-                (when (memq (process-status proc) '(exit signal))
-                  (let ((output (with-current-buffer out-buf (string-trim (buffer-string))))
-                        (status (process-exit-status proc)))
-                    (kill-buffer out-buf)
+      ;; `set-in-progress' is scoped to this call via `cl-labels' rather
+      ;; than a separate top-level defun, so the flag's t/nil transitions
+      ;; -- kickoff here, completion in the sentinel below -- both live
+      ;; textually inside this one function instead of being reachable
+      ;; (and settable) from anywhere else.
+      (cl-labels ((set-in-progress (value)
                     (when (buffer-live-p buf)
                       (with-current-buffer buf
-                        (setq journal-reflect--in-progress nil)
-                        (if (zerop status)
-                            (journal-reflect--insert-reflection output)
-                          (message "journal-reflect: claude exited %s: %s" status output))))))))))
-        (journal-reflect--send-prompt proc prompt))))))
+                        (setq journal-reflect--in-progress value)))))
+        (set-in-progress t)
+        (message "journal-reflect: asking %s..." (journal-reflect--backend-name))
+        (let ((proc
+               (make-process
+                :name "journal-reflect"
+                :buffer out-buf
+                :command (journal-reflect--build-command)
+                ;; Explicit pipe: with the default pty connection, `claude -p'
+                ;; doesn't recognize stdin as piped input and errors out.
+                :connection-type 'pipe
+                :noquery t
+                :sentinel
+                (lambda (proc _event)
+                  (when (memq (process-status proc) '(exit signal))
+                    (let ((output (with-current-buffer out-buf (string-trim (buffer-string))))
+                          (status (process-exit-status proc)))
+                      (kill-buffer out-buf)
+                      (set-in-progress nil)
+                      (when (buffer-live-p buf)
+                        (with-current-buffer buf
+                          (if (zerop status)
+                              (journal-reflect--insert-reflection output)
+                            (message "journal-reflect: %s exited %s: %s"
+                                     (journal-reflect--backend-name) status output))))))))))
+          (journal-reflect--send-prompt proc prompt)))))))
 
 (defun journal-reflect--build-command ()
   "Build the process command list (without the prompt), per
@@ -225,6 +290,14 @@ by `journal-reflect--send-prompt'."
     ('hermes
      (user-error "journal-reflect: Hermes backend not implemented yet"))
     (_ (user-error "journal-reflect: unknown backend %s" journal-reflect-backend))))
+
+(defun journal-reflect--backend-name ()
+  "Human-readable name for the current `journal-reflect-backend', for
+status messages."
+  (pcase journal-reflect-backend
+    ('claude-cli "Claude")
+    ('hermes "Hermes")
+    (backend (symbol-name backend))))
 
 (defun journal-reflect--send-prompt (proc prompt)
   "Send PROMPT to PROC per `journal-reflect-backend' and signal end of input."

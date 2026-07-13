@@ -34,6 +34,35 @@ replies with the prompt it was sent."
          (journal-reflect-claude-args nil))
      ,@body))
 
+(defmacro journal-reflect-test--with-org-journal-dir (entries &rest body)
+  "Run BODY with a temp `org-journal-dir' populated from ENTRIES.
+ENTRIES is a list of (YEAR MONTH DAY CONTENT) lists; each is written to
+the path org-journal itself would use for that date (via
+`org-journal--get-entry-path'), so this exercises journal-reflect's
+real org-journal date-lookup API rather than a hand-rolled stand-in.
+`org-journal' is required for real; `features' and the dates cache are
+restored afterward so unrelated tests aren't affected by run order."
+  (declare (indent 1))
+  `(progn
+     (require 'org-journal)
+     (let* ((org-journal-dir (make-temp-file "journal-reflect-test-" t))
+            (org-journal-file-type 'daily)
+            (org-journal-file-format "%Y%m%d")
+            (org-journal--dates (make-hash-table :test 'equal))
+            (org-journal--sorted-dates nil)
+            (already-featured (featurep 'org-journal)))
+       (unwind-protect
+           (progn
+             (dolist (e ,entries)
+               (let ((year (nth 0 e)) (month (nth 1 e)) (day (nth 2 e)) (content (nth 3 e)))
+                 (with-temp-file (org-journal--get-entry-path
+                                  (org-journal--calendar-date->time (list month day year)))
+                   (insert content))))
+             ,@body)
+         (unless already-featured
+           (setq features (delq 'org-journal features)))
+         (delete-directory org-journal-dir t)))))
+
 (defun journal-reflect-test--wait-for (buf &optional timeout)
   "Block until `journal-reflect--in-progress' is nil in BUF or TIMEOUT elapses."
   (with-current-buffer buf
@@ -59,6 +88,60 @@ replies with the prompt it was sent."
       "* Not a reflection\nSome body.\n"
     (should (equal (journal-reflect--buffer-without-reflection)
                     "* Not a reflection\nSome body."))))
+
+;;; Prior-day context: labeled and distinguished from today's entry
+
+(ert-deftest journal-reflect-test-previous-context/empty-without-org-journal ()
+  (let ((journal-reflect-context-days 3))
+    (should (equal (journal-reflect--previous-context) ""))))
+
+(ert-deftest journal-reflect-test-previous-context/labels-days-and-strips-their-reflections ()
+  (journal-reflect-test--with-org-journal-dir
+      '((2026 7 10 "Yesterday's notes.\n* Reflection\nOld AI reflection.\n"))
+    (let* ((journal-reflect-context-days 1)
+           (context (journal-reflect--previous-context)))
+      (should (string-match-p "for spotting patterns only" context))
+      (should (string-match-p "2026-07-10" context))
+      (should (string-match-p "Yesterday's notes\\." context))
+      (should-not (string-match-p "Old AI reflection" context)))))
+
+(ert-deftest journal-reflect-test-previous-context/excludes-current-and-future-dates ()
+  ;; Regression guard for the switch to org-journal's date index: exclusion
+  ;; of "today" must compare calendar dates, not just the current file path,
+  ;; so it still works regardless of `org-journal-file-format'.
+  (journal-reflect-test--with-org-journal-dir
+      '((2026 7 9 "Two days ago.\n")
+        (2026 7 10 "Yesterday.\n")
+        (2026 7 11 "Today.\n"))
+    (let* ((journal-reflect-context-days 5)
+           (today-file (org-journal--get-entry-path
+                        (org-journal--calendar-date->time '(7 11 2026)))))
+      (with-temp-buffer
+        (setq buffer-file-name today-file)
+        (let ((context (journal-reflect--previous-context)))
+          (should (string-match-p "Two days ago\\." context))
+          (should (string-match-p "Yesterday\\." context))
+          (should-not (string-match-p "Today\\." context)))))))
+
+(ert-deftest journal-reflect-test-entry-text/unlabeled-when-no-context ()
+  ;; Default `journal-reflect-context-days' is 0: entry-text stays exactly
+  ;; the bare body, so the prompt template's own wording is unaffected.
+  (journal-reflect-test--with-org-buffer "Body text.\n"
+    (should (equal (journal-reflect--entry-text) "Body text."))))
+
+(ert-deftest journal-reflect-test-entry-text/marks-today-apart-from-context ()
+  (journal-reflect-test--with-org-journal-dir
+      '((2026 7 10 "Yesterday's notes.\n"))
+    (let ((journal-reflect-context-days 1))
+      (journal-reflect-test--with-org-buffer "Today's notes.\n"
+        (let ((text (journal-reflect--entry-text)))
+          (should (string-match-p "for spotting patterns only" text))
+          (should (string-match-p "Yesterday's notes\\." text))
+          (should (string-match-p "Today's entry" text))
+          (should (string-match-p "Today's notes\\." text))
+          ;; The context block must come before the today's-entry marker.
+          (should (< (string-match "for spotting patterns only" text)
+                     (string-match "Today's entry" text))))))))
 
 (ert-deftest journal-reflect-test-insert-reflection/fresh ()
   (journal-reflect-test--with-org-buffer "Body text.\n"
@@ -101,6 +184,35 @@ replies with the prompt it was sent."
 (ert-deftest journal-reflect-test-build-command/unknown-backend ()
   (let ((journal-reflect-backend 'bogus))
     (should-error (journal-reflect--build-command) :type 'user-error)))
+
+(ert-deftest journal-reflect-test-backend-name/known-backends ()
+  (let ((journal-reflect-backend 'claude-cli))
+    (should (equal (journal-reflect--backend-name) "Claude")))
+  (let ((journal-reflect-backend 'hermes))
+    (should (equal (journal-reflect--backend-name) "Hermes"))))
+
+(ert-deftest journal-reflect-test-backend-name/falls-back-to-symbol-name ()
+  (let ((journal-reflect-backend 'bogus))
+    (should (equal (journal-reflect--backend-name) "bogus"))))
+
+;;; journal-reflect--after-save
+
+(ert-deftest journal-reflect-test-after-save/runs-immediately ()
+  (journal-reflect-test--with-org-buffer "Body text.\n"
+    (let ((run-count 0))
+      (cl-letf (((symbol-function 'journal-reflect--run)
+                 (lambda () (setq run-count (1+ run-count)))))
+        (journal-reflect--after-save)
+        (should (= run-count 1))))))
+
+(ert-deftest journal-reflect-test-after-save/suppressed-hook-does-nothing ()
+  (journal-reflect-test--with-org-buffer "Body text.\n"
+    (let ((journal-reflect--suppress-hook t)
+          (run-count 0))
+      (cl-letf (((symbol-function 'journal-reflect--run)
+                 (lambda () (setq run-count (1+ run-count)))))
+        (journal-reflect--after-save)
+        (should (= run-count 0))))))
 
 ;;; journal-reflect--run: skip conditions
 
