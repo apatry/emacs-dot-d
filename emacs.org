@@ -854,7 +854,8 @@ project:
   (use-package consult-projectile
     :after (consult projectile)
     :bind
-    ("C-c p p" . consult-projectile)
+    (:map projectile-command-map
+          ("p" . consult-projectile))
     :ensure t)
 #+END_SRC
 
