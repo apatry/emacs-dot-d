@@ -1325,7 +1325,15 @@ authenticated.
     :if my/journal-dir
     :after org-journal
     :load-path "~/.emacs.d/elisp/"
-    :hook (org-journal-mode . journal-reflect-mode))
+    :hook (org-journal-mode . journal-reflect-mode)
+    :config
+    ;; On native Windows Emacs, `claude' typically isn't a Windows binary
+    ;; at all -- it's installed inside WSL, so it can't be found via
+    ;; `exec-path'. Route the call through wsl.exe instead, which forwards
+    ;; stdin/stdout to the WSL-side `claude' just fine.
+    (when (eq system-type 'windows-nt)
+      (setq journal-reflect-claude-executable "wsl")
+      (setq journal-reflect-claude-args (cons "claude" journal-reflect-claude-args))))
 #+end_src
 
 Manually (re)generate a reflection for the current entry with
