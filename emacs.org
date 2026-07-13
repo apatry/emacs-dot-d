@@ -1269,14 +1269,26 @@ Once task juggler is installed, we need to enable its org-mode exporter ([[https
 
 ** org-journal
 
-Add support for [[https://github.com/bastibe/org-journal][org-journal]] when the directory =~/journal= is found:
+Add support for [[https://github.com/bastibe/org-journal][org-journal]] when a journal directory is found. Different
+machines have historically ended up journaling in different
+conventional spots (=~/journal= on Linux, =~/Documents/journal= on at
+least one Windows box, where org-journal's own default silently took
+over once this used to hardcode =~/journal= alone) -- =my/journal-dir=
+picks whichever actually exists, so both the gate below and
+=journal-reflect='s own gate stay in sync with reality instead of each
+hardcoding the same assumption separately:
 
 #+begin_src emacs-lisp
+  (defvar my/journal-dir
+    (seq-find #'file-directory-p '("~/journal" "~/Documents/journal"))
+    "This machine's org-journal directory, or nil if none of the
+usual candidates exist.")
+
   (use-package org-journal
-    :if (file-directory-p "~/journal")
+    :if my/journal-dir
     :defer t
     :config
-    (setq org-journal-dir "~/journal")
+    (setq org-journal-dir my/journal-dir)
     (setq org-journal-file-type 'daily)
     (setq org-journal-date-format "%A, %d %B %Y")
     (setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"IN-PROGRESS\"")
@@ -1310,7 +1322,7 @@ authenticated.
 #+begin_src emacs-lisp
   (use-package journal-reflect
     :straight nil
-    :if (file-directory-p "~/journal")
+    :if my/journal-dir
     :after org-journal
     :load-path "~/.emacs.d/elisp/"
     :hook (org-journal-mode . journal-reflect-mode))
